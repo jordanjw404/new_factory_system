@@ -4,6 +4,7 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from django.contrib.auth.views import LoginView
 from django.shortcuts import redirect
+from .forms import CustomLoginForm
 
 # ✅ Dashboard view (protected)
 @login_required
@@ -26,3 +27,8 @@ class CustomLoginView(LoginView):
 
 def root_redirect_view(request):
     return redirect('login')
+
+
+class CustomLoginView(LoginView):
+    template_name = 'core/pages/login.html'
+    authentication_form = CustomLoginForm
