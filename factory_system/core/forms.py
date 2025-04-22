@@ -10,3 +10,4 @@ class CustomLoginForm(AuthenticationForm):
         label='Password',
         widget=forms.PasswordInput(attrs={'placeholder': 'Password'})
     )
+

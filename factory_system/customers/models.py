@@ -11,6 +11,8 @@ class Customer(models.Model):
     mobile = models.CharField("Mobile Number", max_length=20, blank=True)
     address_1 = models.TextField(blank=True, help_text="Mailing address for the customer")
     address_2 = models.TextField(blank=True, help_text="Mailing address for the customer")
+    city = models.CharField(max_length=100, blank=True)
+    postcode = models.CharField(max_length=20, blank=True)
     notes = models.TextField(blank=True, help_text="Internal notes about the customer")
     is_active = models.BooleanField(default=True, help_text="Active status of the customer")
     created_at = models.DateTimeField(auto_now_add=True)
