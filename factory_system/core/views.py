@@ -11,3 +11,7 @@ def UserView(request):
     hashed_password = make_password(password)
     return render(request, 'create_user.html', 
                 {'users': users, 'hashed_password': hashed_password})
+
+
+def dashboard_view(request):
+    return render(request, 'core/pages/dashboard.html')
