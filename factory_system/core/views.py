@@ -32,3 +32,7 @@ def root_redirect_view(request):
 class CustomLoginView(LoginView):
     template_name = 'core/pages/login.html'
     authentication_form = CustomLoginForm
+
+    def get_success_url(self):
+        return '/dashboard/'
+

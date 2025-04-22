@@ -13,4 +13,3 @@ class Order(models.Model):
     
     class Meta:
         ordering = ["-order_date"]
-
