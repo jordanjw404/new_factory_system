@@ -1,10 +1,17 @@
 from django.shortcuts import render
-
-# Create your views here.
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
+from django.contrib.auth.views import LoginView
+from django.shortcuts import redirect
 
-# Create User views here.
+# ✅ Dashboard view (protected)
+@login_required
+def dashboard_view(request):
+    return render(request, 'core/pages/dashboard.html')
+
+# ✅ Create User view (protected)
+@login_required
 def UserView(request):
     users = User.objects.all()
     password = 'password'
@@ -12,6 +19,10 @@ def UserView(request):
     return render(request, 'create_user.html', 
                 {'users': users, 'hashed_password': hashed_password})
 
+# ✅ Login view (public)
+class CustomLoginView(LoginView):
+    template_name = 'core/pages/login.html'
 
-def dashboard_view(request):
-    return render(request, 'core/pages/dashboard.html')
+
+def root_redirect_view(request):
+    return redirect('login')
