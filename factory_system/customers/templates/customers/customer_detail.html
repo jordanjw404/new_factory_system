@@ -1,13 +1,58 @@
-{% extends "base.html" %}
+{% extends "core/base.html" %}
 
 {% block content %}
 <div class="container mt-4">
   <h2>{{ customer.name }}</h2>
-  <ul class="list-group mb-3">
-    <li class="list-group-item"><strong>Email:</strong> {{ customer.email }}</li>
-    <li class="list-group-item"><strong>Phone:</strong> {{ customer.phone }}</li>
-    <li class="list-group-item"><strong>Address:</strong> {{ customer.address }}</li>
-  </ul>
-  <a href="{% url 'customers:customer_list' %}" class="btn btn-secondary">Back to Customers</a>
+
+  <div class="card">
+    <div class="card-body">
+      <p><strong>Contact Name:</strong> {{ customer.contact_name }}</p>
+      <p><strong>Email:</strong> {{ customer.email }}</p>
+      <p><strong>Phone:</strong> {{ customer.phone }}</p>
+      <p><strong>Mobile:</strong> {{ customer.mobile }}</p>
+      <p><strong>Address:</strong> {{ customer.address_1 }}, {{ customer.address_2 }}, {{ customer.city }}, {{ customer.postcode }}</p>
+      <p><strong>Status:</strong>
+        {% if customer.is_active %}
+          ✅ Active
+        {% else %}
+          ❌ Inactive
+        {% endif %}
+      </p>
+      <p><strong>Notes:</strong> {{ customer.notes }}</p>
+      <p><strong>Created By:</strong> {{ customer.created_by }}</p>
+      <p><strong>Created At:</strong> {{ customer.created_at|date:"d M Y, H:i" }}</p>
+      <p><strong>Updated At:</strong> {{ customer.updated_at|date:"d M Y, H:i" }}</p>
+      <div class="mt-4 d-flex justify-content-end">
+        <a href="{% url 'customers:customer_edit' customer.pk %}" class="btn btn-warning me-2">Edit</a>
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+            Delete
+          </button>
+      </div>
+    </div>
+  </div>
+
+  <a href="{% url 'customers:customer_list' %}" class="btn btn-secondary mt-3">← Back to Customer List</a>
 </div>
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Are you sure you want to delete <strong>{{ customer.name }}</strong>?
+        </div>
+        <div class="modal-footer">
+          <form method="post" action="{% url 'customers:customer_delete' customer.pk %}">
+            {% csrf_token %}
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-danger">Yes, Delete</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  
 {% endblock %}

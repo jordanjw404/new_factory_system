@@ -1,0 +1,49 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+{% load widget_tweaks %}
+
+
+<div class="container mt-4">
+  <h2>Customer List</h2>
+
+  <!-- Filter Form -->
+  <form method="get" class="row g-3 mb-3">
+    <div class="col-md-4">
+      {{ filter.form.name.label_tag }}
+      {{ filter.form.name|add_class:"form-control" }}
+    </div>
+    <div class="col-md-4 align-self-end">
+      <button type="submit" class="btn btn-primary">Filter</button>
+    </div>
+  </form>
+
+  <table class="table table-hover">
+    <thead class="table-dark">
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Details</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for customer in customers %}
+        <tr>
+          <td>{{ customer.id }}</td>
+          <td>{{ customer.name }}</td>
+          <td>{{ customer.email }}</td>
+          <td>{{ customer.phone }}</td>
+          <td>
+            <a href="{% url 'customers:customer_detail' customer.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="5">No customers found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

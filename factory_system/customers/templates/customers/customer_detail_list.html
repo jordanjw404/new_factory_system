@@ -1,0 +1,67 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+{% load widget_tweaks %}
+
+
+<div class="container mt-4">
+  <h2>Customer List</h2>
+
+  <!-- Filter Form -->
+  <form method="get" class="row g-3 mb-3">
+    <div class="col-md-4">
+      {{ filter.form.name.label_tag }}
+      {{ filter.form.name|add_class:"form-control" }}
+    </div>
+    <div class="col-md-4 align-self-end">
+      <button type="submit" class="btn btn-primary">Filter</button>
+    </div>
+  </form>
+
+  <table class="table table-hover">
+    <thead class="table-dark">
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Contact Name</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Details</th>
+        <th>Addres 1</th>
+        <th>Adress 2</th>
+        <th>City</th>
+        <th>Post Code</th>
+        <th>Notes</th>
+        <th>Is Active</th>
+        <th>Created At</th>
+        <th>Updated At</th>
+        <th>Created By</th>
+
+      </tr>
+    </thead>
+    <tbody>
+      {% for customer in customers %}
+        <tr>
+          <td>{{ customer.id }}</td>
+          <td>{{ customer.name }}</td>
+          <td>{{ customer.contact_name }}</td>
+          <td>{{ customer.email }}</td>
+          <td>{{ customer.phone }}</td>
+          <td>{{ customer.mobile }}</td>
+          <td>{{ customer.address_1 }}</td>
+          <td>{{ customer.address_2 }}</td>
+          <td>{{ customer.city }}</td>
+          <td>{{ customer.post_code }}</td>
+          <td>{{ customer.notes }}</td>
+          <td>{{ customer.is_active }}</td>
+          <td>{{ customer.created_at }}</td>
+          <td>{{ customer.updated_at }}</td>
+          <td>{{ customer.created_by }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="5">No customers found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
