@@ -1,0 +1,43 @@
+{% extends "core/base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+  <h2>All Orders</h2>
+
+  <table class="table table-hover">
+    <thead class="table-dark">
+      <tr>
+        <th>ID</th>
+        <th>Customer</th>
+        <th>Ref</th>
+        <th>Type</th>
+        <th>Status</th>
+        <th>Due Date</th>
+        <th>Owner</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for order in orders %}
+        <tr>
+          <td>{{ order.id }}</td>
+          <td>{{ order.customer.name }}</td>
+          <td>{{ order.reference }}</td>
+          <td>{{ order.get_order_type_display }}</td>
+          <td>
+            <span class="badge bg-secondary">{{ order.get_status_display }}</span>
+          </td>
+          <td>{{ order.delivery_date|date:"d M Y" }}</td>
+          <td>{{ order.owner }}</td>
+          <td>
+            <a href="{% url 'orders:order_detail' order.id %}" class="btn btn-sm btn-outline-primary">View</a>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="8">No orders found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}
