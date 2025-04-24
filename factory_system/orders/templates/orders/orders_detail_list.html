@@ -1,6 +1,22 @@
 {% extends "core/base.html" %}
 {% block content %}
 
+{% load crispy_forms_tags %}
+
+<form method="get" class="row align-items-end g-2 mb-3">
+    <div class="col-md-2">{{ filter.form.customer|crispy }}</div>
+    <div class="col-md-2">{{ filter.form.reference|crispy }}</div>
+    <div class="col-md-2">{{ filter.form.status|crispy }}</div>
+    <div class="col-md-2">{{ filter.form.order_type|crispy }}</div>
+    <div class="col-md-2 text-end">
+      <button type="submit" class="btn btn-sm btn-primary w-100">Filter</button>
+    </div>
+    <div class="col-md-2 text-end">
+      <a href="{% url 'orders:order_list' %}" class="btn btn-sm btn-outline-secondary w-100">Clear</a>
+    </div>
+  </form>
+  
+  
 <div class="container mt-4">
   <h2>Detailed Orders View</h2>
 

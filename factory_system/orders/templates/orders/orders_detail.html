@@ -1,29 +1,5 @@
 {% extends "core/base.html" %}
 {% block content %}
-{% load crispy_forms_tags %}
-
-<form method="get" class="row g-3 mb-4">
-  <div class="col-md-3">
-    {{ filter.form.customer.label_tag }}
-    {{ filter.form.customer|as_crispy_field }}
-  </div>
-  <div class="col-md-3">
-    {{ filter.form.reference.label_tag }}
-    {{ filter.form.reference|as_crispy_field }}
-  </div>
-  <div class="col-md-3">
-    {{ filter.form.status.label_tag }}
-    {{ filter.form.status|as_crispy_field }}
-  </div>
-  <div class="col-md-3">
-    {{ filter.form.order_type.label_tag }}
-    {{ filter.form.order_type|as_crispy_field }}
-  </div>
-  <div class="col-12 text-end">
-    <button type="submit" class="btn btn-primary">Filter</button>
-    <a href="{% url 'orders:order_detail_list' %}" class="btn btn-outline-secondary ms-2">Clear</a>
-  </div>
-</form>
 
 <div class="container mt-4">
   <h2>Order: {{ order.name }} ({{ order.reference }})</h2>

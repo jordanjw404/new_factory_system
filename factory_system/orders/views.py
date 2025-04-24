@@ -4,10 +4,14 @@ from django.contrib.auth.decorators import login_required
 from .forms import OrderForm
 from .filters import OrderFilter
 
+
 @login_required
 def order_list(request):
-    orders = Order.objects.select_related("customer", "owner").order_by("-created_at")
-    return render(request, "orders/orders_list.html", {"orders": orders})
+    order_filter = OrderFilter(request.GET, queryset=Order.objects.select_related("customer", "owner").order_by("-created_at"))
+    return render(request, "orders/orders_list.html", {
+        "filter": order_filter,
+        "orders": order_filter.qs,
+    })
 
 @login_required
 def order_detail(request, pk):
@@ -27,10 +31,10 @@ def order_create(request):
         form = OrderForm()
     return render(request, "orders/order_form.html", {"form": form})
 
-@login_required
-def order_detail_list(request):
-    orders = Order.objects.select_related("customer", "owner").order_by("-created_at")
-    return render(request, "orders/orders_detail_list.html", {"orders": orders})
+#@login_required
+#def order_detail_list(request):
+ #   orders = Order.objects.select_related("customer", "owner").order_by("-created_at")
+  #  return render(request, "orders/orders_detail_list.html", {"orders": orders})
 
 @login_required
 def order_detail_list(request):
@@ -39,3 +43,4 @@ def order_detail_list(request):
         "filter": order_filter,
         "orders": order_filter.qs
     })
+

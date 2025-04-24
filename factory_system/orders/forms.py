@@ -10,10 +10,15 @@ class OrderForm(forms.ModelForm):
             'name', 'customer', 'reference', 'delivery_date', 'is_collection',
             'order_type', 'status', 'robes', 'cabs', 'panels', 'owner'
         ]
+        widgets = {
+            'delivery_date': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'form-control'
+            }),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
         self.helper = FormHelper()
         self.helper.form_method = "post"
         self.helper.layout = Layout(
@@ -26,17 +31,17 @@ class OrderForm(forms.ModelForm):
                 Column("owner", css_class="col-md-6"),
             ),
             Row(
-                Column("delivery_date", css_class="col-md-4"),
-                Column("is_collection", css_class="col-md-4"),
-                Column("order_type", css_class="col-md-4"),
+                Column("delivery_date", css_class="col-md-6"),
+                Column("is_collection", css_class="col-md-6"),
+            ),
+            Row(
+                Column("order_type", css_class="col-md-6"),
+                Column("status", css_class="col-md-6"),
             ),
             Row(
                 Column("robes", css_class="col-md-4"),
                 Column("cabs", css_class="col-md-4"),
                 Column("panels", css_class="col-md-4"),
-            ),
-            Row(
-                Column("status", css_class="col-md-6"),
             ),
             Submit("submit", "Save Order", css_class="btn btn-primary w-100 mt-3")
         )
