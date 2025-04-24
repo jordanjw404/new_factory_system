@@ -1,0 +1,53 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% load crispy_forms_tags %}
+
+<form method="get" class="row g-3 mb-4">
+  <div class="col-md-3">
+    {{ filter.form.customer.label_tag }}
+    {{ filter.form.customer|as_crispy_field }}
+  </div>
+  <div class="col-md-3">
+    {{ filter.form.reference.label_tag }}
+    {{ filter.form.reference|as_crispy_field }}
+  </div>
+  <div class="col-md-3">
+    {{ filter.form.status.label_tag }}
+    {{ filter.form.status|as_crispy_field }}
+  </div>
+  <div class="col-md-3">
+    {{ filter.form.order_type.label_tag }}
+    {{ filter.form.order_type|as_crispy_field }}
+  </div>
+  <div class="col-12 text-end">
+    <button type="submit" class="btn btn-primary">Filter</button>
+    <a href="{% url 'orders:order_detail_list' %}" class="btn btn-outline-secondary ms-2">Clear</a>
+  </div>
+</form>
+
+<div class="container mt-4">
+  <h2>Order: {{ order.name }} ({{ order.reference }})</h2>
+
+  <div class="card mt-3">
+    <div class="card-body">
+      <p><strong>Customer:</strong> {{ order.customer.name }}</p>
+      <p><strong>Sales Owner:</strong> {{ order.owner }}</p>
+      <p><strong>Order Type:</strong> {{ order.get_order_type_display }}</p>
+      <p><strong>Status:</strong> <span class="badge bg-info">{{ order.get_status_display }}</span></p>
+      <p><strong>Delivery Date:</strong> {{ order.delivery_date|date:"d M Y" }}</p>
+      <p><strong>Collection:</strong> {% if order.is_collection %}✅ Yes{% else %}❌ No{% endif %}</p>
+      <hr>
+      <p><strong>Cabinets:</strong> {{ order.cabs }}</p>
+      <p><strong>Robes:</strong> {{ order.robes }}</p>
+      <p><strong>Panels:</strong> {{ order.panels }}</p>
+      <hr>
+      <p><strong>Created By:</strong> {{ order.created_by }}</p>
+      <p><strong>Created At:</strong> {{ order.created_at|date:"d M Y, H:i" }}</p>
+      <p><strong>Last Updated:</strong> {{ order.updated_at|date:"d M Y, H:i" }}</p>
+    </div>
+  </div>
+
+  <a href="{% url 'orders:order_list' %}" class="btn btn-secondary mt-3">← Back to Orders</a>
+</div>
+
+{% endblock %}

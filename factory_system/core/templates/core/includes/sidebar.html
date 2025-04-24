@@ -7,14 +7,15 @@
                 <i class="bi bi-house"></i> Dashboard
             </a>
         </li>
-        <li class="nav-item">
-            <a href="/orders/" class="nav-link text-white">
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="orderMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="bi bi-file-earmark-text"></i> Orders
             </a>
-        </li>
-            <a href="/products/" class="nav-link text-white">
-                <i class="bi bi-box"></i> Products
-            </a>
+            <ul class="dropdown-menu" aria-labelledby="orderMenu">
+                <li><a class="dropdown-item" href="{% url 'orders:order_list' %}">Order List</a></li>
+                <li><a class="dropdown-item" href="{% url 'orders:order_create' %}">Create Order</a></li>
+                <li><a class="dropdown-item" href="{% url 'orders:order_detail_list' %}">Order Detail List<a/></li>
+            </ul>
 
         <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="customerMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -25,6 +26,10 @@
             <li><a class="dropdown-item" href="{% url 'customers:customer_detail_list' %}">Customer Detail List</a></li>
             <li><a class="dropdown-item" href="{% url 'customers:customer_create' %}">Create Customer</a></li>
             </ul>
+        </li>
+        <a href="/products/" class="nav-link text-white">
+            <i class="bi bi-box"></i> Products
+        </a>
         <li class="nav-item">
             <a href="/create-user/" class="nav-link text-white">
                 <i class="bi bi-person-plus"></i> Create User
