@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
+from django.contrib.messages import constants as messages
 
 from pathlib import Path
 
@@ -44,6 +45,7 @@ INSTALLED_APPS = [
     'orders',
     'django_filters',
     'widget_tweaks',
+    'django_tables2'
 ]
 
 MIDDLEWARE = [
@@ -141,3 +143,12 @@ SESSION_COOKIE_HTTPONLY = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGIN_URL = '/login/'
+
+
+MESSAGE_TAGS = {
+    messages.DEBUG: 'debug',
+    messages.INFO: 'info',
+    messages.SUCCESS: 'success',
+    messages.WARNING: 'warning',
+    messages.ERROR: 'danger',
+}
