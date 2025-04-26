@@ -8,7 +8,7 @@
   <h2>Customer List</h2>
 
   <!-- Filter Form -->
-  <form method="get" class="row g-3 mb-3">
+  <form method="get" class="row gx-2 gy-1 mb-3 align-items-end">
     <div class="col-md-4">
       {{ filter.form.name.label_tag }}
       {{ filter.form.name|add_class:"form-control" }}
@@ -18,7 +18,7 @@
     </div>
   </form>
 
-  <table class="table table-hover">
+  <table class="table table-hover table-striped table-sm align-middle text-center rounded shadow-sm">
     <thead class="table-dark">
       <tr>
         <th>ID</th>
