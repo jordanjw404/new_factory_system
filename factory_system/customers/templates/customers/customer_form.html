@@ -3,35 +3,37 @@
 
 {% block content %}
 <div class="container mt-4">
-  <h2>Create New Customer</h2>
-  {% csrf_token %}
+  <h2>{% if edit_mode %}Edit Customer{% else %}Create New Customer{% endif %}</h2>
 
-  {# Loop through all fields EXCEPT 'is_active' #}
-  {% for field in form %}
-    {% if field.name != "is_active" %}
-      <div class="form-floating mb-3">
-        {{ field }}
-        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-        {% if field.errors %}
-          <div class="text-danger small">{{ field.errors|join:", " }}</div>
-        {% endif %}
-      </div>
-    {% endif %}
-  {% endfor %}
-  
-  {# Now manually render the is_active checkbox separately #}
-  <div class="form-check mb-3">
-    {{ form.is_active }}
-    <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
-      {{ form.is_active.label }}
-    </label>
-    {% if form.is_active.errors %}
-      <div class="text-danger small">{{ form.is_active.errors|join:", " }}</div>
-    {% endif %}
-  </div>
-  
-  <button type="submit" class="btn btn-success w-100 mt-3">Save Customer</button>
-  
+  <form method="post">
+    {% csrf_token %}
+    
+    {# Loop through all fields EXCEPT 'is_active' #}
+    {% for field in form %}
+      {% if field.name != "is_active" %}
+        <div class="form-floating mb-3">
+          {{ field }}
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {% if field.errors %}
+            <div class="text-danger small">{{ field.errors|join:", " }}</div>
+          {% endif %}
+        </div>
+      {% endif %}
+    {% endfor %}
+    
+    {# Now manually render the is_active checkbox separately #}
+    <div class="form-check mb-3">
+      {{ form.is_active }}
+      <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+        {{ form.is_active.label }}
+      </label>
+      {% if form.is_active.errors %}
+        <div class="text-danger small">{{ form.is_active.errors|join:", " }}</div>
+      {% endif %}
+    </div>
+    
+    <button type="submit" class="btn btn-success w-100 mt-3">Save Customer</button>
+  </form>
 
   <a href="{% url 'customers:customer_list' %}" class="btn btn-secondary mt-3">← Back to Customers</a>
 </div>

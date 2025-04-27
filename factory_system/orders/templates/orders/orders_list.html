@@ -2,11 +2,13 @@
 {% block content %}
 
 {% load widget_tweaks %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>Simplified Orders List</h2>
+</div>
 <button class="btn btn-sm btn-outline-dark mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#orderFilters">
   🔍 Show Filters
 </button>
 <div class="collapse p-3 border rounded bg-light" id="orderFilters">
-
   <form method="get" class="row gx-2 gy-1 mb-3 align-items-end">
 
       <div class="col-md-3">
@@ -39,8 +41,7 @@
 <p class="text-muted small ms-2">
   Showing {{ orders|length }} result{{ orders|length|pluralize }}.
 </p>
-<div class="d-flex justify-content-between align-items-center my-3">
-  <h2>All Orders</h2>
+<div class="d-flex justify-content-end align-items-center my-3">
   <a href="{% url 'orders:order_create' %}" class="btn btn-primary mb-3">➕ New Order</a>
 </div>
 <div class="container mt-4">

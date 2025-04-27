@@ -1,110 +1,106 @@
 {% extends "core/base.html" %}
 {% block content %}
-
 {% load widget_tweaks %}
-<button class="btn btn-sm btn-outline-dark mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#orderFilters">
-  🔍 Show Filters
-</button>
-<div class="collapse" id="orderFilters">
-  <form method="get" class="row g-2 mb-4 align-items-end">
-    <div class="col-md-3">
-      {{ filter.form.customer.label_tag }}
-      {{ filter.form.customer|add_class:"form-select form-select-sm" }}
-    </div>
-    <div class="col-md-3">
-      {{ filter.form.reference.label_tag }}
-      {{ filter.form.reference|add_class:"form-control form-control-sm" }}
-    </div>
-    <div class="col-md-2">
-      {{ filter.form.status.label_tag }}
-      {{ filter.form.status|add_class:"form-select form-select-sm" }}
-    </div>
-    <div class="col-md-2">
-      {{ filter.form.order_type.label_tag }}
-      {{ filter.form.order_type|add_class:"form-select form-select-sm" }}
-    </div>
-    <div class="col-md-4">
-      {{ filter.form.delivery_date.label_tag }}
-      {{ filter.form.delivery_date |add_class:"form-select form-select-sm" }}
-    </div>
-    <div class="col-md-2 text-end">
-      <button type="submit" class="btn btn-sm btn-primary w-100">Filter</button>
-      <a href="{% url 'orders:order_list' %}" class="btn btn-sm btn-outline-secondary w-100 mt-2">Clear</a>
-    </div>
-  </form>
-  
-</div>
-<p class="text-muted small ms-2">
-  Showing {{ orders|length }} result{{ orders|length|pluralize }}.
-</p>
-  
-  
-<div class="container mt-4">
-  <h2>Detailed Orders View</h2>
 
-  <table class="table table-hover table-striped table-sm align-middle text-center rounded shadow-sm ">
-    <thead class="table-dark">
-      <tr>
-        <th>ID</th>
-        <th>Reference</th>
-        <th>Customer</th>
-        <th>Ref_Number</th>
-        <th>Type</th>
-        <th>Status</th>
-        <th>Delivery</th>
-        <th>Collection</th>
-        <th>Robes</th>
-        <th>Cabs</th>
-        <th>Panels</th>
-        <th>Owner</th>
-        <th>Created</th>
-        <th>Updated</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for order in orders %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Detailed Orders View</h2>
+  </div>
+
+  <button class="btn btn-sm btn-outline-dark mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#orderFilters">
+    🔍 Show Filters
+  </button>
+
+  <div class="collapse p-3 border rounded bg-light mb-4" id="orderFilters">
+    <form method="get" class="row gx-2 gy-2 align-items-end">
+      <div class="col-md-3">{{ filter.form.customer.label_tag }}{{ filter.form.customer|add_class:"form-select form-select-sm" }}</div>
+      <div class="col-md-3">{{ filter.form.reference.label_tag }}{{ filter.form.reference|add_class:"form-control form-control-sm" }}</div>
+      <div class="col-md-2">{{ filter.form.status.label_tag }}{{ filter.form.status|add_class:"form-select form-select-sm" }}</div>
+      <div class="col-md-2">{{ filter.form.order_type.label_tag }}{{ filter.form.order_type|add_class:"form-select form-select-sm" }}</div>
+      <div class="col-md-2">{{ filter.form.delivery_date.label_tag }}{{ filter.form.delivery_date|add_class:"form-control form-control-sm" }}</div>
+      <div class="col-md-2 text-end">
+        <button type="submit" class="btn btn-sm btn-primary w-100">Go</button>
+        <a href="{% url 'orders:order_detail_list' %}" class="btn btn-sm btn-outline-secondary w-100 mt-2">Clear</a>
+      </div>
+    </form>
+  </div>
+
+  <p class="text-muted small ms-2">
+    Showing {{ orders|length }} result{{ orders|length|pluralize }}.
+  </p>
+
+  {% if orders %}
+  <!-- 🧹 Wrap table in a responsive div to allow sideways scrolling -->
+  <div class="table-responsive rounded shadow-sm">
+    <table class="table table-hover table-striped table-sm align-middle text-center">
+      <thead class="table-dark">
         <tr>
+          <th>ID</th>
+          <th>Reference</th>
+          <th>Customer</th>
+          <th>Ref_Number</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Delivery</th>
+          <th>Collection</th>
+          <th>Robes</th>
+          <th>Cabs</th>
+          <th>Panels</th>
+          <th>Owner</th>
+          <th>Created</th>
+          <th>Updated</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for order in orders %}
+          <tr>
             <td>{{ order.id }}</td>
             <td>{{ order.name }}</td>
             <td>{{ order.customer.name }}</td>
             <td>{{ order.reference }}</td>
             <td>{{ order.get_order_type_display }}</td>
             <td>
-            {% if order.status == 'PENDING' %}
-            <span class="badge bg-warning text-dark">Pending</span>
-            {% elif order.status == 'IN_PRODUCTION' %}
-              <span class="badge bg-primary">In Production</span>
-            {% elif order.status == 'COMPLETE' %}
-              <span class="badge bg-success">Complete</span>
-            {% elif order.status == 'DELIVERED' %}
-              <span class="badge bg-info text-dark">Delivered</span>
-            {% elif order.status == 'CANCELLED' %}
-              <span class="badge bg-danger">Cancelled</span>
-            {% else %}
-              <span class="badge bg-secondary">{{ order.get_status_display }}</span>
-            {% endif %}
-          <td>{{ order.delivery_date }}</td>
-          <td>{% if order.is_collection %}✅{% else %}❌{% endif %}</td>
-          <td>{{ order.robes }}</td>
-          <td>{{ order.cabs }}</td>
-          <td>{{ order.panels }}</td>
-          <td>{{ order.owner }}</td>
-          <td>{{ order.created_at|date:"d M Y, H:i" }}</td>
-          <td>{{ order.updated_at|date:"d M Y, H:i" }}</td>
-        </tr>
-      {% empty %}
-        <tr><td colspan="13">No orders found.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-
-  <div class="d-flex justify-content-between align-items-center my-3">
-    <a href="{% url 'orders:order_list' %}" class="btn btn-sm btn-secondary">
+              {% if order.status == 'PENDING' %}
+                <span class="badge bg-warning text-dark">Pending</span>
+              {% elif order.status == 'IN_PRODUCTION' %}
+                <span class="badge bg-primary">In Production</span>
+              {% elif order.status == 'COMPLETE' %}
+                <span class="badge bg-success">Complete</span>
+              {% elif order.status == 'DELIVERED' %}
+                <span class="badge bg-info text-dark">Delivered</span>
+              {% elif order.status == 'CANCELLED' %}
+                <span class="badge bg-danger">Cancelled</span>
+              {% else %}
+                <span class="badge bg-secondary">{{ order.get_status_display }}</span>
+              {% endif %}
+            </td>
+            <td>{{ order.delivery_date|date:"d M Y" }}</td>
+            <td>{% if order.is_collection %}✅{% else %}❌{% endif %}</td>
+            <td>{{ order.robes }}</td>
+            <td>{{ order.cabs }}</td>
+            <td>{{ order.panels }}</td>
+            <td>{{ order.owner }}</td>
+            <td>{{ order.created_at|date:"d M Y, H:i" }}</td>
+            <td>{{ order.updated_at|date:"d M Y, H:i" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <div class="alert alert-info mt-3">
+      No orders found.
+    </div>
+  {% endif %}
+  <div class="d-flex align-items-center mt-4">
+    <a href="{% url 'orders:order_list' %}" class="btn btn-sm btn-secondary me-auto">
       ⬅️ Back to Summary
     </a>
-  
     <a href="{% url 'orders:order_export' %}?{{ request.GET.urlencode }}" class="btn btn-sm btn-success">
       ⬇️ Export to Excel
     </a>
   </div>
+  
+</div>
+
 {% endblock %}

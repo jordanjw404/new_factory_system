@@ -60,3 +60,4 @@ def customer_delete(request, pk):
         return redirect('customers:customer_list')
 
     return render(request, 'customers/customer_confirm_delete.html', {'customer': customer})
+
