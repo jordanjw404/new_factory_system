@@ -22,10 +22,21 @@
                 <i class="bi bi-people"></i>Customers
             </a>
             <ul class="dropdown-menu" aria-labelledby="customerMenu">
-            <li><a class="dropdown-item" href="{% url 'customers:customer_list' %}">Customer List</a></li>
-            <li><a class="dropdown-item" href="{% url 'customers:customer_detail_list' %}">Customer Detail List</a></li>
-            <li><a class="dropdown-item" href="{% url 'customers:customer_create' %}">Create Customer</a></li>
+                <li><a class="dropdown-item" href="{% url 'customers:customer_list' %}">Customer List</a></li>
+                <li><a class="dropdown-item" href="{% url 'customers:customer_detail_list' %}">Customer Detail List</a></li>
+                <li><a class="dropdown-item" href="{% url 'customers:customer_create' %}">Create Customer</a></li>
             </ul>
+        </li>
+        <li>
+            <a class="nav-link dropdown-toggle" href="#" id="customerMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-people"></i> production
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="productionMenu">
+                <li><a class="dropdown-item" href="{#">Production List</a></li>
+                <li><a class="dropdown-item" href="#">Create Production</a></li>
+                <li><a class="dropdown-item" href="#">Production Detail List</a></li>
+            </ul>
+
         </li>
         <a href="/products/" class="nav-link text-white">
             <i class="bi bi-box"></i> Products
