@@ -1,6 +1,5 @@
 from django import forms
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Row, Column, Submit
 from .models import Order
 
 class OrderForm(forms.ModelForm):
@@ -11,37 +10,20 @@ class OrderForm(forms.ModelForm):
             'order_type', 'status', 'robes', 'cabs', 'panels', 'owner'
         ]
         widgets = {
-            'delivery_date': forms.DateInput(attrs={
-                'type': 'date',
-                'class': 'form-control'
-            }),
+            'name': forms.TextInput(attrs={"class": "form-control", "placeholder": " "}),
+            'customer': forms.Select(attrs={"class": "form-select", "placeholder": " "}),
+            'reference': forms.TextInput(attrs={"class": "form-control", "placeholder": " "}),
+            'delivery_date': forms.DateInput(attrs={"type": "date", "class": "form-control", "placeholder": " "}),
+            'is_collection': forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            'order_type': forms.Select(attrs={"class": "form-select", "placeholder": " "}),
+            'status': forms.Select(attrs={"class": "form-select", "placeholder": " "}),
+            'robes': forms.NumberInput(attrs={"class": "form-control", "placeholder": " "}),
+            'cabs': forms.NumberInput(attrs={"class": "form-control", "placeholder": " "}),
+            'panels': forms.NumberInput(attrs={"class": "form-control", "placeholder": " "}),
+            'owner': forms.Select(attrs={"class": "form-select", "placeholder": " "}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.form_method = "post"
-        self.helper.layout = Layout(
-            Row(
-                Column("name", css_class="col-md-6"),
-                Column("reference", css_class="col-md-6"),
-            ),
-            Row(
-                Column("customer", css_class="col-md-6"),
-                Column("owner", css_class="col-md-6"),
-            ),
-            Row(
-                Column("delivery_date", css_class="col-md-6"),
-                Column("is_collection", css_class="col-md-6"),
-            ),
-            Row(
-                Column("order_type", css_class="col-md-6"),
-                Column("status", css_class="col-md-6"),
-            ),
-            Row(
-                Column("robes", css_class="col-md-4"),
-                Column("cabs", css_class="col-md-4"),
-                Column("panels", css_class="col-md-4"),
-            ),
-            Submit("submit", "Save Order", css_class="btn btn-primary w-100 mt-3")
-        )

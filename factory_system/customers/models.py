@@ -4,17 +4,17 @@ from django.contrib.auth import get_user_model
 User = get_user_model()  # if using Django's auth User for created_by
 
 class Customer(models.Model):
-    name = models.CharField(max_length=255, help_text="Company or Customer name")
+    name = models.CharField(max_length=30, help_text="Company or Customer name")
     contact_name = models.CharField("Contact Person", max_length=255, blank=True)
-    email = models.EmailField(unique=True)  # Unique contact email for the customer
+    email = models.EmailField(unique=True)
     phone = models.CharField("Phone Number", max_length=20, blank=True)
     mobile = models.CharField("Mobile Number", max_length=20, blank=True)
-    address_1 = models.TextField(blank=True, help_text="Mailing address for the customer")
-    address_2 = models.TextField(blank=True, help_text="Mailing address for the customer")
-    city = models.CharField(max_length=100, blank=True)
+    address_1 = models.TextField(blank=True,)
+    address_2 = models.TextField(blank=True,)
+    city = models.CharField(max_length=20, blank=True)
     postcode = models.CharField(max_length=20, blank=True)
-    notes = models.TextField(blank=True, help_text="Internal notes about the customer")
-    is_active = models.BooleanField(default=True, help_text="Active status of the customer")
+    notes = models.TextField(blank=True,)
+    is_active = models.BooleanField(default=True,)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(

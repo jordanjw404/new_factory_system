@@ -3,24 +3,36 @@
 
 {% block content %}
 <div class="container mt-4">
-  <div class="row justify-content-center">
-    <div class="col-md-6">
-      <div class="card shadow rounded-3">
-        <div class="card-header bg-primary text-white">
-          <h4 class="mb-0">Create Customer</h4>
-        </div>
-        <div class="card-body">
-          <form method="post" novalidate>
-            {% csrf_token %}
-            {{ form|crispy }}
-            <div class="d-flex justify-content-end mt-3">
-              <button type="submit" class="btn btn-success me-2">Save</button>
-              <a href="{% url 'customers:customer_list' %}" class="btn btn-secondary">Cancel</a>
-            </div>
-          </form>
-        </div>
+  <h2>Create New Customer</h2>
+  {% csrf_token %}
+
+  {# Loop through all fields EXCEPT 'is_active' #}
+  {% for field in form %}
+    {% if field.name != "is_active" %}
+      <div class="form-floating mb-3">
+        {{ field }}
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {% if field.errors %}
+          <div class="text-danger small">{{ field.errors|join:", " }}</div>
+        {% endif %}
       </div>
-    </div>
+    {% endif %}
+  {% endfor %}
+  
+  {# Now manually render the is_active checkbox separately #}
+  <div class="form-check mb-3">
+    {{ form.is_active }}
+    <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+      {{ form.is_active.label }}
+    </label>
+    {% if form.is_active.errors %}
+      <div class="text-danger small">{{ form.is_active.errors|join:", " }}</div>
+    {% endif %}
   </div>
+  
+  <button type="submit" class="btn btn-success w-100 mt-3">Save Customer</button>
+  
+
+  <a href="{% url 'customers:customer_list' %}" class="btn btn-secondary mt-3">← Back to Customers</a>
 </div>
 {% endblock %}

@@ -1,8 +1,7 @@
 from django import forms
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Submit, Row, Column, Field
+from crispy_forms.layout import Layout, Submit, Row, Column, Field, ButtonHolder
 from .models import Customer
-
 
 class CustomerForm(forms.ModelForm):
     class Meta:
@@ -12,39 +11,47 @@ class CustomerForm(forms.ModelForm):
             "address_1", "address_2", "city", "postcode", "notes", "is_active"
         ]
         widgets = {
-            'address_1': forms.TextInput(attrs={'placeholder': 'Address Line 1'}),
-            'address_2': forms.TextInput(attrs={'placeholder': 'Address Line 2'}),
-            'notes': forms.Textarea(attrs={'rows': 2}),
+            "name": forms.TextInput(attrs={"class": "form-control", "placeholder": " "}),
+            "contact_name": forms.TextInput(attrs={"class": "form-control", "placeholder": " "}),
+            "email": forms.EmailInput(attrs={"class": "form-control", "placeholder": " "}),
+            "phone": forms.TextInput(attrs={"class": "form-control", "placeholder": " "}),
+            "mobile": forms.TextInput(attrs={"class": "form-control", "placeholder": " "}),
+            "address_1": forms.TextInput(attrs={"class": "form-control", "placeholder": " "}),
+            "address_2": forms.TextInput(attrs={"class": "form-control", "placeholder": " "}),
+            "city": forms.TextInput(attrs={"class": "form-control", "placeholder": " "}),
+            "postcode": forms.TextInput(attrs={"class": "form-control", "placeholder": " "}),
+            "notes": forms.Textarea(attrs={"class": "form-control", "placeholder": " ", "rows": 3}),
+            "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
+
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
         self.helper = FormHelper()
         self.helper.form_method = "post"
-        self.helper.form_class = "form-horizontal" 
-        self.helper.label_class = "col-sm-4 col-form-label"
-        self.helper.field_class = "col-sm-8"
-
         self.helper.layout = Layout(
             Row(
-                Column(Field("name"), css_class="mb-3"),
-                Column(Field("contact_name"), css_class="mb-3"),
+                Column("name", css_class="col-md-6"),
+                Column("contact_name", css_class="col-md-6"),
             ),
             Row(
-                Column(Field("email"), css_class="mb-3"),
-                Column(Field("phone"), css_class="mb-3"),
-                Column(Field("mobile"), css_class="mb-3"),
+                Column("email", css_class="col-md-6"),
+                Column("phone", css_class="col-md-6"),
             ),
             Row(
-                Column(Field("address_1"), css_class="mb-3"),
-                Column(Field("address_2"), css_class="mb-3"),
+                Column("mobile", css_class="col-md-6"),
+                Column("address_1", css_class="col-md-6"),
             ),
             Row(
-                Column(Field("city"), css_class="mb-3"),
-                Column(Field("postcode"), css_class="mb-3"),
+                Column("address_2", css_class="col-md-6"),
+                Column("city", css_class="col-md-6"),
             ),
-            Field("notes"),
-            Field("is_active"),
-            Submit("submit", "Save Customer", css_class="btn btn-primary w-100 mt-3")
+            Row(
+                Column("postcode", css_class="col-md-4"),
+                Column("notes", css_class="col-md-4"),
+                Column("is_active", css_class="col-md-4"),
+            ),
+            ButtonHolder(
+                Submit("submit", "Save Customer", css_class="btn btn-primary w-100 mt-3")
+            )
         )
