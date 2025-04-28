@@ -40,9 +40,12 @@
           <i class="bi bi-gear"></i> Production
         </a>
         <ul class="dropdown-menu" aria-labelledby="productionMenu">
-          <li><a class="dropdown-item" href="{% url 'production:production_list' %}">Production List</a></li>
-          <a class="dropdown-item" href="{% url 'production:production_create' %}">Create Production</a>
-          <li><a class="dropdown-item" href="#">Production Detail List</a></li>
+          <li>
+            <a class="dropdown-item" href="{% url 'production:production_list' %}">Production List</a>
+          </li>
+          <li>
+            <a class="dropdown-item" href="{% url 'production:production_create' %}">Create Production</a>
+          </li>
         </ul>
       </li>
   

@@ -10,8 +10,21 @@
 
     <h5 class="text-primary">🔗 Link to Order</h5>
     <div class="form-floating mb-3">
-      {{ form.order|add_class:"form-select form-select-sm" }}
+      <select name="order" id="id_order" class="form-select form-select-sm" onchange="this.form.submit()">
+
+        <option value="">Select an Order</option>
+        {% for order in orders %}
+          <option value="{{ order.id }}" 
+                  data-ref="{{ order.reference }}"
+                  data-customer="{{ order.customer.name }}"
+                  data-delivery="{{ order.delivery_date }}">
+            {{ order.reference }} - {{ order.customer.name }}
+          </option>
+        {% endfor %}
+      </select>
+      <label for="id_order">Order</label>
     </div>
+    
 
     <div id="orderInfo" class="alert alert-secondary mt-3 d-none">
       <p><strong>Reference:</strong> <span id="orderReference"></span></p>
@@ -38,16 +51,44 @@
 
     <h5 class="text-primary">🎯 Target Dates</h5>
     <div class="row g-2">
-      <div class="col-md-6">{{ form.sales_target_date|add_class:"form-control form-control-sm" }}</div>
-      <div class="col-md-6">{{ form.programming_target_date|add_class:"form-control form-control-sm" }}</div>
-      <div class="col-md-6">{{ form.nest_target_date|add_class:"form-control form-control-sm" }}</div>
-      <div class="col-md-6">{{ form.edge_target_date|add_class:"form-control form-control-sm" }}</div>
-      <div class="col-md-6">{{ form.prep_target_date|add_class:"form-control form-control-sm" }}</div>
-      <div class="col-md-6">{{ form.build_target_date|add_class:"form-control form-control-sm" }}</div>
-      <div class="col-md-6">{{ form.fittings_target_date|add_class:"form-control form-control-sm" }}</div>
-      <div class="col-md-6">{{ form.wrapping_target_date|add_class:"form-control form-control-sm" }}</div>
-      <div class="col-md-6">{{ form.quality_target_date|add_class:"form-control form-control-sm" }}</div>
+      <div class="col-md-6 form-floating mb-3">
+        {{ form.sales_target_date|add_class:"form-control form-control-sm" }}
+        <label for="{{ form.sales_target_date.id_for_label }}">Sales Target Date</label>
+      </div>
+      <div class="col-md-6 form-floating mb-3">
+        {{ form.programming_target_date|add_class:"form-control form-control-sm" }}
+        <label for="{{ form.programming_target_date.id_for_label }}">Programming Target Date</label>
+      </div>
+      <div class="col-md-6 form-floating mb-3">
+        {{ form.nest_target_date|add_class:"form-control form-control-sm" }}
+        <label for="{{ form.nest_target_date.id_for_label }}">Nest Target Date</label>
+      </div>
+      <div class="col-md-6 form-floating mb-3">
+        {{ form.edge_target_date|add_class:"form-control form-control-sm" }}
+        <label for="{{ form.edge_target_date.id_for_label }}">Edge Target Date</label>
+      </div>
+      <div class="col-md-6 form-floating mb-3">
+        {{ form.prep_target_date|add_class:"form-control form-control-sm" }}
+        <label for="{{ form.prep_target_date.id_for_label }}">Prep Target Date</label>
+      </div>
+      <div class="col-md-6 form-floating mb-3">
+        {{ form.build_target_date|add_class:"form-control form-control-sm" }}
+        <label for="{{ form.build_target_date.id_for_label }}">Build Target Date</label>
+      </div>
+      <div class="col-md-6 form-floating mb-3">
+        {{ form.fittings_target_date|add_class:"form-control form-control-sm" }}
+        <label for="{{ form.fittings_target_date.id_for_label }}">Fittings Target Date</label>
+      </div>
+      <div class="col-md-6 form-floating mb-3">
+        {{ form.wrapping_target_date|add_class:"form-control form-control-sm" }}
+        <label for="{{ form.wrapping_target_date.id_for_label }}">Wrapping Target Date</label>
+      </div>
+      <div class="col-md-6 form-floating mb-3">
+        {{ form.quality_target_date|add_class:"form-control form-control-sm" }}
+        <label for="{{ form.quality_target_date.id_for_label }}">Quality Target Date</label>
+      </div>
     </div>
+    
 
     <hr>
 
@@ -72,36 +113,5 @@
 
   <a href="{% url 'production:production_list' %}" class="btn btn-secondary mt-3">← Back to Production List</a>
 </div>
-
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const orderSelect = document.getElementById('id_order');
-    const orderInfo = document.getElementById('orderInfo');
-    const refSpan = document.getElementById('orderReference');
-    const custSpan = document.getElementById('orderCustomer');
-    const delivSpan = document.getElementById('orderDeliveryDate');
-  
-    orderSelect.addEventListener('change', function() {
-      const selectedOption = orderSelect.options[orderSelect.selectedIndex];
-  
-      if (orderSelect.value) {
-        const fullText = selectedOption.textContent;  // Example: "SO-001 - Test Customer (30 Apr 2025)"
-        const parts = fullText.split(' - ');
-        const ref = parts[0];  // "SO-001"
-        const customerAndDate = parts[1].split(' (');
-        const customer = customerAndDate[0];  // "Test Customer"
-        const delivery = customerAndDate[1].replace(')', '');  // "30 Apr 2025"
-  
-        refSpan.textContent = ref;
-        custSpan.textContent = customer;
-        delivSpan.textContent = delivery;
-        orderInfo.classList.remove('d-none');
-      } else {
-        orderInfo.classList.add('d-none');
-      }
-    });
-  });
-  </script>
-  
 
 {% endblock %}

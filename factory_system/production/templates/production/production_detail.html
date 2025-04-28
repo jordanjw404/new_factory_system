@@ -1,0 +1,68 @@
+{% extends "core/base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+  <h2>Production Detail - {{ stage.order.reference }}</h2>
+
+  <div class="card p-4 shadow-sm">
+    <h5><strong>Customer:</strong> {{ stage.order.customer.name }}</h5>
+    <h5><strong>Delivery Date:</strong> {{ stage.order.delivery_date|date:"d M Y" }}</h5>
+
+    <hr>
+
+    <h4>Production Stages</h4>
+    <div class="list-group">
+
+      <div class="list-group-item d-flex justify-content-between">
+        <span><strong>Sales Status:</strong> {{ stage.get_sales_status_display }}</span>
+        <span><strong>Target:</strong> {{ stage.sales_target_date|date:"d M Y" }}</span>
+      </div>
+
+      <div class="list-group-item d-flex justify-content-between">
+        <span><strong>Programming Status:</strong> {{ stage.get_programming_status_display }}</span>
+        <span><strong>Target:</strong> {{ stage.programming_target_date|date:"d M Y" }}</span>
+      </div>
+
+      <div class="list-group-item d-flex justify-content-between">
+        <span><strong>Nest Status:</strong> {{ stage.get_nest_status_display }}</span>
+        <span><strong>Target:</strong> {{ stage.nest_target_date|date:"d M Y" }}</span>
+      </div>
+
+      <div class="list-group-item d-flex justify-content-between">
+        <span><strong>Edge Status:</strong> {{ stage.get_edge_status_display }}</span>
+        <span><strong>Target:</strong> {{ stage.edge_target_date|date:"d M Y" }}</span>
+      </div>
+
+      <div class="list-group-item d-flex justify-content-between">
+        <span><strong>Prep Status:</strong> {{ stage.get_prep_status_display }}</span>
+        <span><strong>Target:</strong> {{ stage.prep_target_date|date:"d M Y" }}</span>
+      </div>
+
+      <div class="list-group-item d-flex justify-content-between">
+        <span><strong>Build Status:</strong> {{ stage.get_build_status_display }}</span>
+        <span><strong>Target:</strong> {{ stage.build_target_date|date:"d M Y" }}</span>
+      </div>
+
+      <div class="list-group-item d-flex justify-content-between">
+        <span><strong>Fittings Status:</strong> {{ stage.get_fittings_status_display }}</span>
+        <span><strong>Target:</strong> {{ stage.fittings_target_date|date:"d M Y" }}</span>
+      </div>
+
+      <div class="list-group-item d-flex justify-content-between">
+        <span><strong>Wrapping Status:</strong> {{ stage.get_wrapping_status_display }}</span>
+        <span><strong>Target:</strong> {{ stage.wrapping_target_date|date:"d M Y" }}</span>
+      </div>
+
+      <div class="list-group-item d-flex justify-content-between">
+        <span><strong>Quality Check Status:</strong> {{ stage.get_quality_status_display }}</span>
+        <span><strong>Target:</strong> {{ stage.quality_target_date|date:"d M Y" }}</span>
+      </div>
+
+    </div>
+
+  </div>
+
+  <a href="{% url 'production:production_list' %}" class="btn btn-secondary mt-4">← Back to Production List</a>
+</div>
+
+{% endblock %}
