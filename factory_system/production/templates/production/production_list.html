@@ -1,0 +1,104 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% load widget_tweaks %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>Production List</h2>
+</div>
+
+<!-- 🔍 Filters -->
+<button class="btn btn-sm btn-outline-dark mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#productionFilters">
+  🔍 Show Filters
+</button>
+
+<div class="collapse p-3 border rounded bg-light" id="productionFilters">
+  <form method="get" class="row gx-2 gy-2 mb-3 align-items-end">
+    <div class="col-md-3">
+      {{ filter.form.sales_status.label_tag }}
+      {{ filter.form.sales_status|add_class:"form-select form-select-sm" }}
+    </div>
+    <div class="col-md-3">
+      {{ filter.form.programming_status.label_tag }}
+      {{ filter.form.programming_status|add_class:"form-select form-select-sm" }}
+    </div>
+    <div class="col-md-3">
+      {{ filter.form.nest_status.label_tag }}
+      {{ filter.form.nest_status|add_class:"form-select form-select-sm" }}
+    </div>
+    <div class="col-md-3">
+      {{ filter.form.build_status.label_tag }}
+      {{ filter.form.build_status|add_class:"form-select form-select-sm" }}
+    </div>
+    <div class="col-md-2 text-end">
+      <button type="submit" class="btn btn-sm btn-primary w-100">Filter</button>
+      <a href="{% url 'production:production_list' %}" class="btn btn-sm btn-outline-secondary w-100 mt-2">Clear</a>
+    </div>
+  </form>
+</div>
+
+<!-- 🔥 Results Summary -->
+<p class="text-muted small ms-2">
+  Showing {{ stages|length }} result{{ stages|length|pluralize }}.
+</p>
+
+<!-- 📋 Table -->
+<div class="container mt-4">
+  <table class="table table-hover table-striped table-sm align-middle text-center rounded shadow-sm">
+    <thead class="table-dark">
+      <tr>
+        <th>Order Ref</th>
+        <th>Customer</th>
+        <th>Sales</th>
+        <th>Programming</th>
+        <th>Nest</th>
+        <th>Edge</th>
+        <th>Prep</th>
+        <th>Build</th>
+        <th>Quality</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for stage in stages %}
+      <tr>
+        <td>{{ stage.order.reference }}</td>
+        <td>{{ stage.order.customer.name }}</td>
+
+        <!-- 🔥 Colored badges for statuses -->
+        <td>
+          {% include "production/includes/status_badge.html" with status=stage.sales_status %}
+        </td>
+        <td>
+          {% include "production/includes/status_badge.html" with status=stage.programming_status %}
+        </td>
+        <td>
+          {% include "production/includes/status_badge.html" with status=stage.nest_status %}
+        </td>
+        <td>
+          {% include "production/includes/status_badge.html" with status=stage.edge_status %}
+        </td>
+        <td>
+          {% include "production/includes/status_badge.html" with status=stage.prep_status %}
+        </td>
+        <td>
+          {% include "production/includes/status_badge.html" with status=stage.build_status %}
+        </td>
+        <td>
+          {% include "production/includes/status_badge.html" with status=stage.quality_status %}
+        </td>
+
+        <!-- Actions -->
+        <td>
+          <a href="{% url 'production:production_detail' stage.pk %}" class="btn btn-sm btn-outline-primary" title="View">
+            <i class="bi bi-eye"></i>
+          </a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="10">No production stages found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

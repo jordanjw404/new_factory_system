@@ -1,0 +1,107 @@
+{% extends "core/base.html" %}
+{% load widget_tweaks %}
+{% block content %}
+
+<div class="container mt-4">
+  <h2>Create New Production Stage</h2>
+
+  <form method="post" class="card p-4 shadow-sm">
+    {% csrf_token %}
+
+    <h5 class="text-primary">🔗 Link to Order</h5>
+    <div class="form-floating mb-3">
+      {{ form.order|add_class:"form-select form-select-sm" }}
+    </div>
+
+    <div id="orderInfo" class="alert alert-secondary mt-3 d-none">
+      <p><strong>Reference:</strong> <span id="orderReference"></span></p>
+      <p><strong>Customer:</strong> <span id="orderCustomer"></span></p>
+      <p><strong>Due Date:</strong> <span id="orderDeliveryDate"></span></p>
+    </div>
+
+    <hr>
+
+    <h5 class="text-primary">🛠 Stage Status</h5>
+    <div class="row g-2">
+      <div class="col-md-6">{{ form.sales_status|add_class:"form-select form-select-sm" }}</div>
+      <div class="col-md-6">{{ form.programming_status|add_class:"form-select form-select-sm" }}</div>
+      <div class="col-md-6">{{ form.nest_status|add_class:"form-select form-select-sm" }}</div>
+      <div class="col-md-6">{{ form.edge_status|add_class:"form-select form-select-sm" }}</div>
+      <div class="col-md-6">{{ form.prep_status|add_class:"form-select form-select-sm" }}</div>
+      <div class="col-md-6">{{ form.build_status|add_class:"form-select form-select-sm" }}</div>
+      <div class="col-md-6">{{ form.fittings_status|add_class:"form-select form-select-sm" }}</div>
+      <div class="col-md-6">{{ form.wrapping_status|add_class:"form-select form-select-sm" }}</div>
+      <div class="col-md-6">{{ form.quality_status|add_class:"form-select form-select-sm" }}</div>
+    </div>
+
+    <hr>
+
+    <h5 class="text-primary">🎯 Target Dates</h5>
+    <div class="row g-2">
+      <div class="col-md-6">{{ form.sales_target_date|add_class:"form-control form-control-sm" }}</div>
+      <div class="col-md-6">{{ form.programming_target_date|add_class:"form-control form-control-sm" }}</div>
+      <div class="col-md-6">{{ form.nest_target_date|add_class:"form-control form-control-sm" }}</div>
+      <div class="col-md-6">{{ form.edge_target_date|add_class:"form-control form-control-sm" }}</div>
+      <div class="col-md-6">{{ form.prep_target_date|add_class:"form-control form-control-sm" }}</div>
+      <div class="col-md-6">{{ form.build_target_date|add_class:"form-control form-control-sm" }}</div>
+      <div class="col-md-6">{{ form.fittings_target_date|add_class:"form-control form-control-sm" }}</div>
+      <div class="col-md-6">{{ form.wrapping_target_date|add_class:"form-control form-control-sm" }}</div>
+      <div class="col-md-6">{{ form.quality_target_date|add_class:"form-control form-control-sm" }}</div>
+    </div>
+
+    <hr>
+
+    <h5 class="text-primary">📏 Workload Estimation</h5>
+    <div class="row g-2">
+      <div class="col-md-4">
+        {{ form.estimated_nest_sheets.label_tag }}
+        {{ form.estimated_nest_sheets|add_class:"form-control form-control-sm" }}
+      </div>
+      <div class="col-md-4">
+        {{ form.estimated_build_cabs.label_tag }}
+        {{ form.estimated_build_cabs|add_class:"form-control form-control-sm" }}
+      </div>
+      <div class="col-md-4">
+        {{ form.actual_nest_sheets.label_tag }}
+        {{ form.actual_nest_sheets|add_class:"form-control form-control-sm" }}
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-success w-100 mt-4">Save Production Stage</button>
+  </form>
+
+  <a href="{% url 'production:production_list' %}" class="btn btn-secondary mt-3">← Back to Production List</a>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const orderSelect = document.getElementById('id_order');
+    const orderInfo = document.getElementById('orderInfo');
+    const refSpan = document.getElementById('orderReference');
+    const custSpan = document.getElementById('orderCustomer');
+    const delivSpan = document.getElementById('orderDeliveryDate');
+  
+    orderSelect.addEventListener('change', function() {
+      const selectedOption = orderSelect.options[orderSelect.selectedIndex];
+  
+      if (orderSelect.value) {
+        const fullText = selectedOption.textContent;  // Example: "SO-001 - Test Customer (30 Apr 2025)"
+        const parts = fullText.split(' - ');
+        const ref = parts[0];  // "SO-001"
+        const customerAndDate = parts[1].split(' (');
+        const customer = customerAndDate[0];  // "Test Customer"
+        const delivery = customerAndDate[1].replace(')', '');  // "30 Apr 2025"
+  
+        refSpan.textContent = ref;
+        custSpan.textContent = customer;
+        delivSpan.textContent = delivery;
+        orderInfo.classList.remove('d-none');
+      } else {
+        orderInfo.classList.add('d-none');
+      }
+    });
+  });
+  </script>
+  
+
+{% endblock %}

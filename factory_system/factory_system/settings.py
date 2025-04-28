@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'core',
     'customers',
     'orders',
+    'production',
     'django_filters',
     'widget_tweaks',
     'django_tables2'
