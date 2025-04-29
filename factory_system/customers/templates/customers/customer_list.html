@@ -1,6 +1,6 @@
 {% extends "core/base.html" %}
-{% block content %}
 {% load widget_tweaks %}
+{% block content %}
 
 <div class="container mt-4">
   <h2>Customer List</h2>
@@ -9,14 +9,21 @@
   <form method="get" class="row gx-2 gy-1 mb-3 align-items-end">
     <div class="col-md-4">
       {{ filter.form.name.label_tag }}
-      {{ filter.form.name|add_class:"form-control" }}
+      {{ filter.form.name|add_class:"form-control form-control-sm" }}
     </div>
-    <div class="col-md-4 align-self-end">
-      <button type="submit" class="btn btn-primary">Filter</button>
+    <div class="col-md-2 align-self-end">
+      <button type="submit" class="btn btn-sm btn-primary w-100">Filter</button>
+    </div>
+    <div class="col-md-2 align-self-end">
+      <a href="{% url 'customers:customer_list' %}" class="btn btn-sm btn-outline-secondary w-100">Clear</a>
     </div>
   </form>
 
-  <table class="table table-hover table-striped table-sm align-middle text-center rounded shadow-sm">
+  <div class="d-flex justify-content-end align-items-center my-3">
+    <a href="{% url 'customers:customer_create' %}" class="btn btn-primary mb-3 btn-sm">➕ New Customer</a>
+  </div>
+
+  <table id="customerTable" class="table table-hover table-striped table-sm align-middle text-center shadow-sm">
     <thead class="table-dark">
       <tr>
         <th>ID</th>
@@ -28,56 +35,72 @@
     </thead>
     <tbody>
       {% for customer in customers %}
-        <tr>
-          <td>{{ customer.id }}</td>
-          <td>{{ customer.name }}</td>
-          <td>{{ customer.email }}</td>
-          <td>{{ customer.phone }}</td>
-          <td>
-            <div class="btn-group btn-group-sm" role="group">
-              <a href="{% url 'customers:customer_detail' customer.id %}" class="btn btn-outline-primary" title="View Customer">
-                <i class="bi bi-eye"></i>
-              </a>
-              <a href="{% url 'customers:customer_edit' customer.id %}" class="btn btn-outline-warning" title="Edit Customer">
-                <i class="bi bi-pencil-square"></i>
-              </a>
-              <button type="button" class="btn btn-outline-danger" title="Delete" data-bs-toggle="modal" data-bs-target="#deleteModal{{ customer.id }}">
-                <i class="bi bi-trash3"></i>
-              </button>
-            </div>
-          </td>
-        </tr>
-      {% empty %}
-        <tr><td colspan="5">No customers found.</td></tr>
+      <tr>
+        <td>{{ customer.id }}</td>
+        <td>{{ customer.name }}</td>
+        <td>{{ customer.email }}</td>
+        <td>{{ customer.phone }}</td>
+        <td>
+          <div class="btn-group btn-group-sm" role="group">
+            <a href="{% url 'customers:customer_detail' customer.id %}" class="btn btn-outline-primary" title="View Customer">
+              <i class="bi bi-eye"></i>
+            </a>
+            <a href="{% url 'customers:customer_edit' customer.id %}" class="btn btn-outline-warning" title="Edit Customer">
+              <i class="bi bi-pencil-square"></i>
+            </a>
+            <button type="button" class="btn btn-outline-danger" title="Delete" data-bs-toggle="modal" data-bs-target="#deleteModal{{ customer.id }}">
+              <i class="bi bi-trash3"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
       {% endfor %}
     </tbody>
   </table>
 
-  <!-- 🧹 After table, generate modals -->
   {% for customer in customers %}
-    {% if customer.id %}
-    <div class="modal fade" id="deleteModal{{ customer.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ customer.id }}" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header bg-danger text-white">
-            <h5 class="modal-title" id="deleteModalLabel{{ customer.id }}">Confirm Delete</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            Are you sure you want to delete <strong>{{ customer.name }}</strong>?
-          </div>
-          <div class="modal-footer">
-            <form method="post" action="{% url 'customers:customer_delete' customer.id %}">
-              {% csrf_token %}
-              <button type="submit" class="btn btn-danger btn-sm">Yes, Delete</button>
-              <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-            </form>
-          </div>
+  <div class="modal fade" id="deleteModal{{ customer.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ customer.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-danger">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title" id="deleteModalLabel{{ customer.id }}">Delete Customer</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Are you sure you want to delete <strong>{{ customer.name }}</strong>?
+        </div>
+        <div class="modal-footer">
+          <form method="post" action="{% url 'customers:customer_delete' customer.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger btn-sm">Yes, Delete</button>
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+          </form>
         </div>
       </div>
     </div>
-    {% endif %}
+  </div>
   {% endfor %}
 </div>
+
+<!-- 📦 Include DataTables -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  $('#customerTable').DataTable({
+    paging: true,
+    pageLength: 25,
+    lengthChange: true,
+    searching: true,
+    ordering: true,
+    info: true,
+    autoWidth: false,
+    responsive: true
+  });
+});
+</script>
 
 {% endblock %}

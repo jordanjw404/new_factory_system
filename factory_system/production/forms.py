@@ -1,6 +1,6 @@
+# production/forms.py
 from django import forms
 from .models import ProductionStage
-from orders.models import Order
 
 class ProductionStageForm(forms.ModelForm):
     class Meta:
@@ -10,12 +10,9 @@ class ProductionStageForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['order'].queryset = Order.objects.select_related('customer')
-
-        # Now customize each option
-        choices = []
-        for order in self.fields['order'].queryset:
-            label = f"{order.reference} - {order.customer.name} ({order.delivery_date.strftime('%d %b %Y')})"
-            choices.append((order.pk, label))
-
-        self.fields['order'].choices = choices
+        # Automatically set all DateFields to have a date picker
+        for field_name, field in self.fields.items():
+            if isinstance(field, forms.DateField):
+                field.widget = forms.DateInput(
+                    attrs={'type': 'date', 'class': 'form-control form-control-sm'}
+                )

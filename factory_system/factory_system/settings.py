@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     'production',
     'django_filters',
     'widget_tweaks',
-    'django_tables2'
+    'django_tables2',
 ]
 
 MIDDLEWARE = [

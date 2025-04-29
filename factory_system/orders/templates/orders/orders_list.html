@@ -1,122 +1,82 @@
 {% extends "core/base.html" %}
+{% load widget_tweaks %}
 {% block content %}
 
-{% load widget_tweaks %}
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h2>Simplified Orders List</h2>
 </div>
+
 <button class="btn btn-sm btn-outline-dark mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#orderFilters">
   🔍 Show Filters
 </button>
+
 <div class="collapse p-3 border rounded bg-light" id="orderFilters">
   <form method="get" class="row gx-2 gy-1 mb-3 align-items-end">
-
-      <div class="col-md-3">
-        {{ filter.form.customer.label_tag }}
-        {{ filter.form.customer|add_class:"form-select form-select-sm" }}
-      </div>
-      <div class="col-md-3">
-        {{ filter.form.reference.label_tag }}
-        {{ filter.form.reference|add_class:"form-control form-control-sm" }}
-      </div>
-      <div class="col-md-2">
-        {{ filter.form.status.label_tag }}
-        {{ filter.form.status|add_class:"form-select form-select-sm" }}
-      </div>
-      <div class="col-md-2">
-        {{ filter.form.order_type.label_tag }}
-        {{ filter.form.order_type|add_class:"form-select form-select-sm" }}
-      </div>
-      <div class="col-md-4">
-        {{ filter.form.delivery_date.label_tag }}
-        {{ filter.form.delivery_date |add_class:"form-select form-select-sm" }}
-      </div>
-      <div class="col-md-2 text-end">
-        <button type="submit" class="btn btn-sm btn-primary w-100">Filter</button>
-        <a href="{% url 'orders:order_list' %}" class="btn btn-sm btn-outline-secondary w-100 mt-2">Clear</a>
-      </div>
-    </form>
-  
+    <div class="col-md-3">{{ filter.form.customer.label_tag }} {{ filter.form.customer|add_class:"form-select form-select-sm" }}</div>
+    <div class="col-md-3">{{ filter.form.reference.label_tag }} {{ filter.form.reference|add_class:"form-control form-control-sm" }}</div>
+    <div class="col-md-2">{{ filter.form.status.label_tag }} {{ filter.form.status|add_class:"form-select form-select-sm" }}</div>
+    <div class="col-md-2">{{ filter.form.order_type.label_tag }} {{ filter.form.order_type|add_class:"form-select form-select-sm" }}</div>
+    <div class="col-md-4">{{ filter.form.delivery_date.label_tag }} {{ filter.form.delivery_date|add_class:"form-select form-select-sm" }}</div>
+    <div class="col-md-2 text-end">
+      <button type="submit" class="btn btn-sm btn-primary w-100">Filter</button>
+      <a href="{% url 'orders:order_list' %}" class="btn btn-sm btn-outline-secondary w-100 mt-2">Clear</a>
+    </div>
+  </form>
 </div>
-<p class="text-muted small ms-2">
-  Showing {{ orders|length }} result{{ orders|length|pluralize }}.
-</p>
+
+<p class="text-muted small ms-2">Showing {{ orders|length }} result{{ orders|length|pluralize }}.</p>
+
 <div class="d-flex justify-content-end align-items-center my-3">
   <a href="{% url 'orders:order_create' %}" class="btn btn-primary mb-3">➕ New Order</a>
 </div>
-<div class="container mt-4">
 
-  <table class="table table-hover table-striped table-sm align-middle text-center rounded shadow-sm">
+<div class="container mt-4">
+  <table id="ordersTable" class="table table-striped table-hover table-bordered table-sm text-center align-middle">
     <thead class="table-dark">
       <tr>
-        <th>ID</th>
-        <th>Reference</th>
-        <th>Customer</th>
-        <th>Ref_Number</th>
-        <th>Type</th>
-        <th>Status</th>
-        <th>Due Date</th>
-        <th>Total Cabs</th>
-        <th>Owner</th>
-        <th>Actions</th>
+        <th>ID</th><th>Reference</th><th>Customer</th><th>Ref Number</th><th>Type</th><th>Status</th><th>Due Date</th><th>Total Cabs</th><th>Owner</th><th>Actions</th>
       </tr>
     </thead>
     <tbody>
       {% for order in orders %}
-        <tr>
-          <td>{{ order.id }}</td>
-          <td>{{ order.name }}</td>
-          <td>{{ order.customer.name }}</td>
-          <td>{{ order.reference }}</td>
-          <td>{{ order.get_order_type_display }}</td>
-          <td>
-            {% if order.status == 'PENDING' %}
-            <span class="badge bg-warning text-dark">Pending</span>
-            {% elif order.status == 'IN_PRODUCTION' %}
-              <span class="badge bg-primary">In Production</span>
-            {% elif order.status == 'COMPLETE' %}
-              <span class="badge bg-success">Complete</span>
-            {% elif order.status == 'DELIVERED' %}
-              <span class="badge bg-info text-dark">Delivered</span>
-            {% elif order.status == 'CANCELLED' %}
-              <span class="badge bg-danger">Cancelled</span>
-            {% else %}
-              <span class="badge bg-secondary">{{ order.get_status_display }}</span>
-            {% endif %}
-          </td>
-          <td>{{ order.delivery_date|date:"d M Y" }}</td>
-          <td>{{ order.robes|add:order.cabs }}</td>
-          <td>{{ order.owner }}</td>
-          <td>
-            <div class="btn-group btn-group-sm" role="group">
-              <a href="{% url 'orders:order_detail' order.id %}" class="btn btn-outline-primary" title="View">
-                <i class="bi bi-eye"></i>
-              </a>
-              <a href="{% url 'orders:order_edit' order.id %}" class="btn btn-outline-warning" title="Edit">
-                <i class="bi bi-pencil-square"></i>
-              </a>
-              <button type="button" class="btn btn-outline-danger" title="Delete" data-bs-toggle="modal" data-bs-target="#deleteModal{{ order.id }}">
-                <i class="bi bi-trash3"></i>
-              </button>
-            </div>
-          </td>
-          
-      {% empty %}
-        <tr><td colspan="8">No orders found.</td></tr>
+      <tr>
+        <td>{{ order.id }}</td>
+        <td>{{ order.name }}</td>
+        <td>{{ order.customer.name }}</td>
+        <td>{{ order.reference }}</td>
+        <td>{{ order.get_order_type_display }}</td>
+        <td>
+          {% if order.status == 'PENDING' %}<span class="badge bg-warning text-dark">Pending</span>
+          {% elif order.status == 'IN_PRODUCTION' %}<span class="badge bg-primary">In Production</span>
+          {% elif order.status == 'COMPLETE' %}<span class="badge bg-success">Complete</span>
+          {% elif order.status == 'DELIVERED' %}<span class="badge bg-info text-dark">Delivered</span>
+          {% elif order.status == 'CANCELLED' %}<span class="badge bg-danger">Cancelled</span>
+          {% else %}<span class="badge bg-secondary">{{ order.get_status_display }}</span>{% endif %}
+        </td>
+        <td>{{ order.delivery_date|date:"d M Y" }}</td>
+        <td>{{ order.robes|add:order.cabs }}</td>
+        <td>{{ order.owner }}</td>
+        <td>
+          <div class="btn-group btn-group-sm">
+            <a href="{% url 'orders:order_detail' order.id %}" class="btn btn-outline-primary" title="View"><i class="bi bi-eye"></i></a>
+            <a href="{% url 'orders:order_edit' order.id %}" class="btn btn-outline-warning" title="Edit"><i class="bi bi-pencil-square"></i></a>
+            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ order.id }}"><i class="bi bi-trash3"></i></button>
+          </div>
+        </td>
+      </tr>
       {% endfor %}
     </tbody>
   </table>
+
   {% for order in orders %}
   <div class="modal fade" id="deleteModal{{ order.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ order.id }}" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content border-danger">
         <div class="modal-header bg-danger text-white">
-          <h5 class="modal-title" id="deleteModalLabel{{ order.id }}">Delete Order</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          <h5 class="modal-title">Delete Order</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
-        <div class="modal-body">
-          Are you sure you want to delete <strong>{{ order.job_name }}</strong> for <strong>{{ order.customer.name }}</strong>?
-        </div>
+        <div class="modal-body">Are you sure you want to delete <strong>{{ order.name }}</strong>?</div>
         <div class="modal-footer">
           <form method="post" action="{% url 'orders:order_delete' order.id %}">
             {% csrf_token %}
@@ -127,17 +87,50 @@
       </div>
     </div>
   </div>
-{% endfor %}
-
+  {% endfor %}
 </div>
+
 <div class="d-flex justify-content-between align-items-center my-3">
-  <a href="{% url 'orders:order_detail_list' %}" class="btn btn-sm btn-secondary">
-    ➡️ Detailed Summary
-  </a>
-
-  <a href="{% url 'orders:order_export' %}?{{ request.GET.urlencode }}" class="btn btn-sm btn-success">
-    ⬇️ Export to Excel
-  </a>
+  <a href="{% url 'orders:order_detail_list' %}" class="btn btn-sm btn-secondary">➡️ Detailed Summary</a>
+  <a href="{% url 'orders:order_export' %}?{{ request.GET.urlencode }}" class="btn btn-sm btn-success">⬇️ Export to Excel</a>
 </div>
+
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+<!-- DataTables Core + Bootstrap 5 Integration -->
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+
+<!-- Optional: DataTables Responsive for mobile -->
+<script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.4.1/js/responsive.bootstrap5.min.js"></script>
+
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.4.1/css/responsive.bootstrap5.min.css">
+
+<script>
+  $(document).ready(function() {
+      $('#ordersTable').DataTable({
+          pageLength: 25,
+          autoWidth: false,
+          responsive: true,
+          order: [[1, 'asc']],
+          lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+          language: {
+            searchPlaceholder: "Quick Search...",
+            search: "",
+            lengthMenu: "_MENU_ entries per page",
+            paginate: {
+              previous: "<",
+              next: ">"
+            }
+          }
+      });
+  });
+  </script>
+  
 
 {% endblock %}

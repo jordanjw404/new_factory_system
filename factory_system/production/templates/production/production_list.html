@@ -1,16 +1,15 @@
 {% extends "core/base.html" %}
+{% load widget_tweaks dict_extras %}
 {% block content %}
-{% load widget_tweaks %}
 
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h2>Production List</h2>
 </div>
 
-<!-- 🔍 Filters -->
+<!-- Filters -->
 <button class="btn btn-sm btn-outline-dark mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#productionFilters">
   🔍 Show Filters
 </button>
-
 <div class="collapse p-3 border rounded bg-light" id="productionFilters">
   <form method="get" class="row gx-2 gy-2 mb-3 align-items-end">
     <div class="col-md-3">
@@ -36,14 +35,13 @@
   </form>
 </div>
 
-<!-- 🔥 Results Summary -->
 <p class="text-muted small ms-2">
   Showing {{ stages|length }} result{{ stages|length|pluralize }}.
 </p>
 
-<!-- 📋 Table -->
+<!-- 📋 Production Table -->
 <div class="container mt-4">
-  <table class="table table-hover table-striped table-sm align-middle text-center rounded shadow-sm">
+  <table id="productionTable" class="table table-hover table-striped table-bordered table-sm align-middle text-center rounded shadow-sm">
     <thead class="table-dark">
       <tr>
         <th>Order Ref</th>
@@ -54,6 +52,8 @@
         <th>Edge</th>
         <th>Prep</th>
         <th>Build</th>
+        <th>Fittings</th>
+        <th>Wrapping</th>
         <th>Quality</th>
         <th>Actions</th>
       </tr>
@@ -64,41 +64,119 @@
         <td>{{ stage.order.reference }}</td>
         <td>{{ stage.order.customer.name }}</td>
 
-        <!-- 🔥 Colored badges for statuses -->
+        {% for field in status_fields %}
         <td>
-          {% include "production/includes/status_badge.html" with status=stage.sales_status %}
+          <div class="dropdown" data-stage-id="{{ stage.id }}">
+            <a class="badge bg-{{ badge_colors|get_item:stage.id|get_item:field|default:'secondary' }} dropdown-toggle text-decoration-none"
+               href="#" role="button" id="dropdownMenu{{ field|capfirst }}{{ stage.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+              {{ stage|get_attr:field|default:"-" }}
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenu{{ field|capfirst }}{{ stage.id }}">
+              <li><a class="dropdown-item" href="#" onclick="updateStatus('{{ stage.id }}', '{{ field }}_status', 'NOT_STARTED')">Not Started</a></li>
+              <li><a class="dropdown-item" href="#" onclick="updateStatus('{{ stage.id }}', '{{ field }}_status', 'IN_PROGRESS')">In Progress</a></li>
+              <li><a class="dropdown-item" href="#" onclick="updateStatus('{{ stage.id }}', '{{ field }}_status', 'STUCK')">Stuck</a></li>
+              <li><a class="dropdown-item" href="#" onclick="updateStatus('{{ stage.id }}', '{{ field }}_status', 'ON_HOLD')">On Hold</a></li>
+              <li><a class="dropdown-item" href="#" onclick="updateStatus('{{ stage.id }}', '{{ field }}_status', 'COMPLETED')">Completed</a></li>
+            </ul>
+          </div>
         </td>
-        <td>
-          {% include "production/includes/status_badge.html" with status=stage.programming_status %}
-        </td>
-        <td>
-          {% include "production/includes/status_badge.html" with status=stage.nest_status %}
-        </td>
-        <td>
-          {% include "production/includes/status_badge.html" with status=stage.edge_status %}
-        </td>
-        <td>
-          {% include "production/includes/status_badge.html" with status=stage.prep_status %}
-        </td>
-        <td>
-          {% include "production/includes/status_badge.html" with status=stage.build_status %}
-        </td>
-        <td>
-          {% include "production/includes/status_badge.html" with status=stage.quality_status %}
-        </td>
+        {% endfor %}
 
-        <!-- Actions -->
         <td>
-          <a href="{% url 'production:production_detail' stage.pk %}" class="btn btn-sm btn-outline-primary">
-            View
-        </a>        
+          <div class="btn-group btn-group-sm">
+            <a href="{% url 'production:production_detail' stage.id %}" class="btn btn-outline-primary" title="View"><i class="bi bi-eye"></i></a>
+            <a href="{% url 'production:production_edit' stage.id %}" class="btn btn-outline-warning" title="Edit"><i class="bi bi-pencil-square"></i></a>
+            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ stage.id }}"><i class="bi bi-trash3"></i></button>
+          </div>
         </td>
       </tr>
       {% empty %}
-      <tr><td colspan="10">No production stages found.</td></tr>
+      <tr><td colspan="12">No production stages found.</td></tr>
       {% endfor %}
     </tbody>
   </table>
 </div>
+
+<!-- Delete Modals -->
+{% for stage in stages %}
+<div class="modal fade" id="deleteModal{{ stage.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ stage.id }}" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-danger">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">Delete Production Stage</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to delete Production Stage for <strong>{{ stage.order.reference }}</strong>?
+      </div>
+      <div class="modal-footer">
+        <form method="post" action="{% url 'production:production_delete' stage.id %}">
+          {% csrf_token %}
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger">Yes, Delete</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+<!-- AJAX update -->
+<script>
+function updateStatus(stageId, fieldName, newStatus) {
+  fetch(`/production/${stageId}/update_status/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': '{{ csrf_token }}'
+    },
+    body: JSON.stringify({
+      status_field: fieldName,
+      new_value: newStatus
+    })
+  })
+  .then(response => {
+    if (response.ok) {
+      location.reload();
+    } else {
+      alert('Failed to update status.');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Error updating status.');
+  });
+}
+</script>
+
+<!-- DataTables (new part) -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.4.1/js/responsive.bootstrap5.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.4.1/css/responsive.bootstrap5.min.css">
+
+<script>
+$(document).ready(function() {
+    $('#productionTable').DataTable({
+        pageLength: 25,
+        autoWidth: false,
+        responsive: true,
+        order: [[0, 'asc']],
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        language: {
+          searchPlaceholder: "Quick Search...",
+          search: "",
+          lengthMenu: "_MENU_ entries per page",
+          paginate: {
+            previous: "<",
+            next: ">"
+          }
+        }
+    });
+});
+</script>
 
 {% endblock %}
