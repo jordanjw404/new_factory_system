@@ -8,7 +8,11 @@ from django.utils.timezone import now
 import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-
+from .filters import ProductionStageFilter
+import csv
+from django.http import HttpResponse
+from .models import ProductionStage
+from .filters import ProductionStageFilter
 # --- Helper function ---
 def subtract_working_days(from_date, working_days):
     current_date = from_date
@@ -183,3 +187,103 @@ def production_update_status(request, pk):
             return JsonResponse({'success': False, 'error': str(e)})
 
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+@login_required
+def production_export(request):
+    stages = ProductionStage.objects.select_related('order', 'order__customer')
+
+    # Prepare data for export
+    data = []
+    for stage in stages:
+        data.append({
+            'Order Ref': stage.order.reference,
+            'Customer': stage.order.customer.name,
+            'Sales Status': stage.get_sales_status_display(),
+            'Programming Status': stage.get_programming_status_display(),
+            'Nest Status': stage.get_nest_status_display(),
+            'Edge Status': stage.get_edge_status_display(),
+            'Prep Status': stage.get_prep_status_display(),
+            'Build Status': stage.get_build_status_display(),
+            'Fittings Status': stage.get_fittings_status_display(),
+            'Wrapping Status': stage.get_wrapping_status_display(),
+            'Quality Status': stage.get_quality_status_display(),
+        })
+
+    df = pd.DataFrame(data)
+
+    # Create Excel file
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=production_list.xlsx'
+    df.to_excel(response, index=False)
+    return response
+
+@login_required
+def production_detail_list(request):
+    stages = ProductionStage.objects.select_related('order', 'order__customer')
+    filter = ProductionStageFilter(request.GET, queryset=stages)
+    filtered_stages = filter.qs
+
+    return render(request, 'production/production_detail_list.html', {
+        'filter': filter,
+        'stages': filtered_stages,
+    })
+
+
+@login_required
+def production_detail_export(request):
+    queryset = ProductionStage.objects.select_related('order', 'order__customer')
+    f = ProductionStageFilter(request.GET, queryset=queryset)
+    stages = f.qs
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="detailed_production_list.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow([
+        "Order Ref", "Customer",
+
+        "Sales Status", "Sales Target Date",
+        "Programming Status", "Programming Target Date",
+        "Nest Status", "Nest Target Date",
+        "Edge Status", "Edge Target Date",
+        "Prep Status", "Prep Target Date",
+        "Build Status", "Build Target Date",
+        "Fittings Status", "Fittings Target Date",
+        "Wrapping Status", "Wrapping Target Date",
+        "Quality Status", "Quality Target Date"
+    ])
+
+    for stage in stages:
+        writer.writerow([
+            stage.order.reference,
+            stage.order.customer.name,
+
+            stage.get_sales_status_display(),
+            stage.sales_target_date,
+
+            stage.get_programming_status_display(),
+            stage.programming_target_date,
+
+            stage.get_nest_status_display(),
+            stage.nest_target_date,
+
+            stage.get_edge_status_display(),
+            stage.edge_target_date,
+
+            stage.get_prep_status_display(),
+            stage.prep_target_date,
+
+            stage.get_build_status_display(),
+            stage.build_target_date,
+
+            stage.get_fittings_status_display(),
+            stage.fittings_target_date,
+
+            stage.get_wrapping_status_display(),
+            stage.wrapping_target_date,
+
+            stage.get_quality_status_display(),
+            stage.quality_target_date,
+        ])
+
+    return response

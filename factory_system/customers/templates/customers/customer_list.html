@@ -23,7 +23,7 @@
     <a href="{% url 'customers:customer_create' %}" class="btn btn-primary mb-3 btn-sm">➕ New Customer</a>
   </div>
 
-  <table id="customerTable" class="table table-hover table-striped table-sm align-middle text-center shadow-sm">
+  <table id="customerTable" class="table table-hover table-striped table-bordered table-sm align-middle text-center shadow-sm">
     <thead class="table-dark">
       <tr>
         <th>ID</th>
@@ -58,6 +58,7 @@
     </tbody>
   </table>
 
+  <!-- Delete Modals -->
   {% for customer in customers %}
   <div class="modal fade" id="deleteModal{{ customer.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ customer.id }}" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -82,14 +83,9 @@
   {% endfor %}
 </div>
 
-<!-- 📦 Include DataTables -->
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
-<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-
+{% block scripts %}
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+$(document).ready(function() {
   $('#customerTable').DataTable({
     paging: true,
     pageLength: 25,
@@ -98,9 +94,19 @@ document.addEventListener("DOMContentLoaded", function () {
     ordering: true,
     info: true,
     autoWidth: false,
-    responsive: true
+    responsive: true,
+    language: {
+      searchPlaceholder: "Quick Search...",
+      search: "",
+      lengthMenu: "_MENU_ entries per page",
+      paginate: {
+        previous: "<",
+        next: ">"
+      }
+    }
   });
 });
 </script>
+{% endblock %}
 
 {% endblock %}

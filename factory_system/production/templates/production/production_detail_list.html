@@ -1,0 +1,143 @@
+{% extends "core/base.html" %}
+{% load widget_tweaks dict_extras %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>Detailed Production List</h2>
+</div>
+
+<!-- Filters -->
+<button class="btn btn-sm btn-outline-dark mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#productionFilters">
+  🔍 Show Filters
+</button>
+<div class="collapse p-3 border rounded bg-light" id="productionFilters">
+  <form method="get" class="row gx-2 gy-2 mb-3 align-items-end">
+    <div class="col-md-3">{{ filter.form.sales_status.label_tag }} {{ filter.form.sales_status|add_class:"form-select form-select-sm" }}</div>
+    <div class="col-md-3">{{ filter.form.programming_status.label_tag }} {{ filter.form.programming_status|add_class:"form-select form-select-sm" }}</div>
+    <div class="col-md-3">{{ filter.form.nest_status.label_tag }} {{ filter.form.nest_status|add_class:"form-select form-select-sm" }}</div>
+    <div class="col-md-3">{{ filter.form.build_status.label_tag }} {{ filter.form.build_status|add_class:"form-select form-select-sm" }}</div>
+    <div class="col-md-2 text-end">
+      <button type="submit" class="btn btn-sm btn-primary w-100">Filter</button>
+      <a href="{% url 'production:production_detail_list' %}" class="btn btn-sm btn-outline-secondary w-100 mt-2">Clear</a>
+    </div>
+  </form>
+</div>
+
+<p class="text-muted small ms-2">
+  Showing {{ stages|length }} result{{ stages|length|pluralize }}.
+</p>
+
+<!-- 📋 Detailed Production Table -->
+<div class="container mt-4">
+  <div class="table-responsive rounded shadow-sm">
+    <table id="productionTable" class="table table-hover table-striped table-bordered table-sm align-middle text-center">
+      <thead class="table-dark">
+        <tr>
+          <th>Order Ref</th>
+          <th>Customer</th>
+          {% for field in status_fields %}
+            <th>{{ field|capfirst }} Status</th>
+            <th>{{ field|capfirst }} Date</th>
+          {% endfor %}
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for stage in stages %}
+        <tr>
+          <td>{{ stage.order.reference }}</td>
+          <td>{{ stage.order.customer.name }}</td>
+
+          {% for field in status_fields %}
+          <td>
+            <div class="dropdown" data-stage-id="{{ stage.id }}">
+              <a class="badge bg-{{ badge_colors|get_item:stage.id|get_item:field|default:'secondary' }} dropdown-toggle text-decoration-none"
+                 href="#" role="button" id="dropdownMenu{{ field|capfirst }}{{ stage.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                {{ stage|get_attr:field|default:"-" }}
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="dropdownMenu{{ field|capfirst }}{{ stage.id }}">
+                <li><a class="dropdown-item" href="#" onclick="updateStatus('{{ stage.id }}', '{{ field }}_status', 'NOT_STARTED')">Not Started</a></li>
+                <li><a class="dropdown-item" href="#" onclick="updateStatus('{{ stage.id }}', '{{ field }}_status', 'IN_PROGRESS')">In Progress</a></li>
+                <li><a class="dropdown-item" href="#" onclick="updateStatus('{{ stage.id }}', '{{ field }}_status', 'STUCK')">Stuck</a></li>
+                <li><a class="dropdown-item" href="#" onclick="updateStatus('{{ stage.id }}', '{{ field }}_status', 'ON_HOLD')">On Hold</a></li>
+                <li><a class="dropdown-item" href="#" onclick="updateStatus('{{ stage.id }}', '{{ field }}_status', 'COMPLETED')">Completed</a></li>
+              </ul>
+            </div>
+          </td>
+          <td>{{ stage|get_attr:field|add:"_target_date"|date:"d M Y" }}</td>
+          {% endfor %}
+
+          <td>
+            <div class="btn-group btn-group-sm">
+              <a href="{% url 'production:production_detail' stage.id %}" class="btn btn-outline-primary" title="View"><i class="bi bi-eye"></i></a>
+              <a href="{% url 'production:production_edit' stage.id %}" class="btn btn-outline-warning" title="Edit"><i class="bi bi-pencil-square"></i></a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="100%">No production stages found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center my-3">
+  <a href="{% url 'production:production_list' %}" class="btn btn-sm btn-secondary">
+    ⬅️ Back to Summary
+  </a>
+  <a href="{% url 'production:production_detail_export' %}?{{ request.GET.urlencode }}" class="btn btn-sm btn-success">
+    ⬇️ Export Detailed to Excel
+  </a>
+</div>
+
+<!-- Page-specific scripts -->
+{% block scripts %}
+<script>
+function updateStatus(stageId, fieldName, newStatus) {
+  fetch(`/production/${stageId}/update_status/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': '{{ csrf_token }}'
+    },
+    body: JSON.stringify({
+      status_field: fieldName,
+      new_value: newStatus
+    })
+  })
+  .then(response => {
+    if (response.ok) {
+      location.reload();
+    } else {
+      alert('Failed to update status.');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Error updating status.');
+  });
+}
+
+$(document).ready(function() {
+    $('#productionTable').DataTable({
+        pageLength: 25,
+        autoWidth: false,
+        responsive: true,
+        order: [[0, 'asc']],
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        language: {
+          searchPlaceholder: "Quick Search...",
+          search: "",
+          lengthMenu: "_MENU_ entries per page",
+          paginate: {
+            previous: "<",
+            next: ">"
+          }
+        }
+    });
+});
+</script>
+{% endblock %}
+
+{% endblock %}
