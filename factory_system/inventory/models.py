@@ -84,3 +84,24 @@ class Movement(models.Model):
 
     def __str__(self):
         return f"{self.move_type}: {self.quantity} {self.item.code} by {self.user.username} on {self.timestamp.strftime('%Y-%m-%d %H:%M')}"
+
+
+class IncomingOrder(models.Model):
+    supplier = models.CharField(max_length=100)
+    order_ref = models.CharField(max_length=100, blank=True)
+    expected_date = models.DateField()
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    created_at = models.DateTimeField(auto_now_add=True)
+    received = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Incoming #{self.id} from {self.supplier} ({'Received' if self.received else 'Pending'})"
+
+
+class IncomingOrderItem(models.Model):
+    order = models.ForeignKey(IncomingOrder, related_name='items', on_delete=models.CASCADE)
+    item = models.ForeignKey(Item, on_delete=models.PROTECT)
+    quantity = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return f"{self.item.code} x {self.quantity}"

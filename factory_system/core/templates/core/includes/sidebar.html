@@ -52,12 +52,21 @@
         </ul>
       </li>
   
-      <!-- Products -->
-      <li class="nav-item">
-        <a href="/products/" class="nav-link text-white">
-          <i class="bi bi-box"></i> Products
-        </a>
-      </li>
+<!-- Inventory -->
+<li class="nav-item dropdown">
+  <a class="nav-link dropdown-toggle text-white" href="#" id="inventoryMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <i class="bi bi-box-seam"></i> Inventory
+  </a>
+  <ul class="dropdown-menu" aria-labelledby="inventoryMenu">
+    <li><a class="dropdown-item" href="{% url 'inventory-list' %}">Inventory List</a></li>
+    <li><a class="dropdown-item" href="{% url 'stock-in' %}">Stock In</a></li>
+    <li><a class="dropdown-item" href="{% url 'stock-out' %}">Stock Out</a></li>
+    <li><a class="dropdown-item" href="{% url 'stock-transfer' %}">Stock Transfer</a></li>
+    <li><a class="dropdown-item" href="{% url 'movement-log' %}">Movement Log</a></li>
+    <li><a class="dropdown-item" href="{% url 'incoming-order-create' %}">➕ New Incoming Order</a></li>
+  </ul>
+</li>
+
   
       <!-- Create User -->
       <li class="nav-item">

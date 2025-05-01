@@ -1,0 +1,78 @@
+{% extends "core/base.html" %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>{{ item.code }} - {{ item.name }}</h2>
+  <a href="{% url 'inventory-list' %}" class="btn btn-outline-secondary btn-sm">⬅ Back to Inventory</a>
+</div>
+
+<div class="row mb-4">
+  <div class="col-md-6">
+    <table class="table table-sm">
+      <tr><th>Type:</th><td>{{ item.get_type_display }}</td></tr>
+      <tr><th>Unit:</th><td>{{ item.unit }}</td></tr>
+      <tr><th>Reorder Level:</th><td>{{ item.reorder_level }}</td></tr>
+      <tr><th>Dimensions:</th>
+        <td>
+          {% if item.type == 'BOARD' or item.type == 'CABINET' %}
+            {{ item.width }} x {{ item.length|default:item.height }} mm
+          {% elif item.type == 'EDGE' %}
+            {{ item.thickness }} mm
+          {% else %}
+            -
+          {% endif %}
+        </td>
+      </tr>
+      <tr><th>Color:</th><td>{{ item.color|default:"-" }}</td></tr>
+      <tr><th>Description:</th><td>{{ item.description|default:"-" }}</td></tr>
+    </table>
+  </div>
+  <div class="col-md-6 text-center">
+    {% if item.barcode_image %}
+      <img src="{{ item.barcode_image.url }}" class="img-fluid border p-2" style="max-height:150px;">
+    {% else %}
+      <p class="text-muted">No barcode generated</p>
+    {% endif %}
+  </div>
+</div>
+
+<h5 class="mb-2">📍 Stock by Location</h5>
+<table class="table table-sm table-bordered">
+  <thead class="table-light">
+    <tr><th>Location</th><th>Quantity</th></tr>
+  </thead>
+  <tbody>
+    {% for stock in stock_by_location %}
+    <tr>
+      <td>{{ stock.location.name }}</td>
+      <td>{{ stock.quantity }} {{ item.unit }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="2">No stock recorded yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h5 class="mt-4 mb-2">🕓 Recent Movements</h5>
+<table class="table table-sm table-striped">
+  <thead>
+    <tr><th>Type</th><th>Qty</th><th>From</th><th>To</th><th>User</th><th>When</th><th>Reason</th></tr>
+  </thead>
+  <tbody>
+    {% for move in recent_movements %}
+    <tr>
+      <td><span class="badge bg-{{ move.move_type|lower }}">{{ move.get_move_type_display }}</span></td>
+      <td>{{ move.quantity }}</td>
+      <td>{{ move.from_location|default:"—" }}</td>
+      <td>{{ move.to_location|default:"—" }}</td>
+      <td>{{ move.user }}</td>
+      <td>{{ move.timestamp|date:"d M Y H:i" }}</td>
+      <td>{{ move.reason|default:"—" }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="7">No recent movements.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}
