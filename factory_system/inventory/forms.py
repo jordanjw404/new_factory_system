@@ -32,6 +32,8 @@ class IncomingOrderForm(forms.ModelForm):
 
 IncomingOrderItemFormSet = inlineformset_factory(
     IncomingOrder, IncomingOrderItem,
-    fields=('item', 'quantity'),
+    fields=('item', 'quantity_expected', 'unit_cost', 'location'),
     extra=5, can_delete=False
 )
+
+

@@ -2,9 +2,12 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.db import transaction
-from django.db.models import Sum
+from django.db.models import Count, Sum
 from .models import Item, Location, ItemStock, Movement
 from .forms import StockInForm, StockOutForm, TransferForm,IncomingOrderForm, IncomingOrderItemFormSet
+from .models import IncomingOrder
+
+
 
 @login_required
 @permission_required('inventory.add_movement', raise_exception=True)
@@ -196,3 +199,16 @@ def create_incoming_order(request):
         'form': form,
         'formset': formset
     })
+
+@login_required
+def incoming_order_list(request):
+    orders = IncomingOrder.objects.select_related('supplier', 'created_by').order_by('-expected_date')
+    return render(request, 'inventory/incoming_order_list.html', {'orders': orders})
+
+
+@login_required
+def incoming_order_detail(request, pk):
+    order = get_object_or_404(IncomingOrder.objects.select_related('supplier', 'created_by'), pk=pk)
+    items = order.items.select_related('item', 'location')
+    return render(request, 'inventory/incoming_order_detail.html', {'order': order, 'items': items})
+

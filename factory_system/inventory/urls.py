@@ -9,5 +9,7 @@ urlpatterns = [
     path('item/<int:pk>/', views.inventory_detail, name='inventory-detail'),
     path('movements/', views.movement_log, name='movement-log'),
     path('incoming/create/', views.create_incoming_order, name='incoming-order-create'),
+    path('incoming/', views.incoming_order_list, name='incoming-order-list'),
+    path('incoming/<int:pk>/', views.incoming_order_detail, name='incoming-order-detail'),
 
 ]
