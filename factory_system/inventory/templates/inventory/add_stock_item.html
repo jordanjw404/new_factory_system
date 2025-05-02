@@ -1,0 +1,82 @@
+{% extends "core/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>Add New Inventory Item</h2>
+  <form method="post" class="card p-4 shadow-sm" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="form-floating mb-3">
+      {{ form.code }}
+      <label for="{{ form.code.id_for_label }}">{{ form.code.label }}</label>
+    </div>
+
+    <div class="form-floating mb-3">
+      {{ form.name }}
+      <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+    </div>
+
+    <div class="form-floating mb-3">
+      {{ form.type }}
+      <label for="{{ form.type.id_for_label }}">{{ form.type.label }}</label>
+    </div>
+
+    <!-- Cabinet -->
+    <div id="cabinet-fields" class="type-fields">
+      <div class="form-floating mb-3">{{ form.width }}<label for="{{ form.width.id_for_label }}">Width</label></div>
+      <div class="form-floating mb-3">{{ form.height }}<label for="{{ form.height.id_for_label }}">Height</label></div>
+      <div class="form-floating mb-3">{{ form.depth }}<label for="{{ form.depth.id_for_label }}">Depth</label></div>
+      <div class="form-floating mb-3">{{ form.color }}<label for="{{ form.color.id_for_label }}">Color</label></div>
+    </div>
+
+    <!-- Board -->
+    <div id="board-fields" class="type-fields">
+      <div class="form-floating mb-3">{{ form.length }}<label for="{{ form.length.id_for_label }}">Length</label></div>
+      <div class="form-floating mb-3">{{ form.width }}<label for="{{ form.width.id_for_label }}">Width</label></div>
+      <div class="form-floating mb-3">{{ form.thickness }}<label for="{{ form.thickness.id_for_label }}">Thickness</label></div>
+      <div class="form-floating mb-3">{{ form.color }}<label for="{{ form.color.id_for_label }}">Color</label></div>
+    </div>
+
+    <!-- Edge -->
+    <div id="edge-fields" class="type-fields">
+      <div class="form-floating mb-3">{{ form.length }}<label for="{{ form.length.id_for_label }}">Length</label></div>
+      <div class="form-floating mb-3">{{ form.thickness }}<label for="{{ form.thickness.id_for_label }}">Thickness</label></div>
+      <div class="form-floating mb-3">{{ form.color }}<label for="{{ form.color.id_for_label }}">Color</label></div>
+    </div>
+
+    <!-- Stock -->
+    <div id="stock-fields" class="type-fields">
+      <div class="form-floating mb-3">{{ form.description }}<label for="{{ form.description.id_for_label }}">Description</label></div>
+    </div>
+
+    <div class="form-floating mb-3">
+      {{ form.unit }}
+      <label for="{{ form.unit.id_for_label }}">{{ form.unit.label }}</label>
+    </div>
+
+    <div class="form-floating mb-3">
+      {{ form.reorder_level }}
+      <label for="{{ form.reorder_level.id_for_label }}">{{ form.reorder_level.label }}</label>
+    </div>
+
+    <button type="submit" class="btn btn-success w-100 mt-3">Save Item</button>
+  </form>
+
+  <a href="{% url 'inventory-list' %}" class="btn btn-secondary mt-3">← Back to Inventory</a>
+</div>
+
+<script>
+  function toggleTypeFields() {
+    const selected = document.getElementById("id_type").value;
+    const types = ["cabinet", "board", "edge", "stock"];
+    types.forEach(type => {
+      const el = document.getElementById(`${type}-fields`);
+      if (el) el.style.display = type.toUpperCase() === selected ? "block" : "none";
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", toggleTypeFields);
+  document.getElementById("id_type").addEventListener("change", toggleTypeFields);
+</script>
+{% endblock %}

@@ -3,11 +3,12 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.db import transaction
 from django.db.models import Count, Sum
-from .models import Item, Location, ItemStock, Movement
-from .forms import StockInForm, StockOutForm, TransferForm,IncomingOrderForm, IncomingOrderItemFormSet
+from .models import Item, Location, ItemStock, Movement, BoardStock
+from .forms import StockInForm, StockOutForm, TransferForm,IncomingOrderForm, IncomingOrderItemFormSet, BoardStockForm, AddItemForm
 from .models import IncomingOrder
 import csv
 from django.http import HttpResponse
+
 
 
 @login_required
@@ -239,3 +240,37 @@ def import_inventory(request):
 
 def export_inventory(request):
     return HttpResponse("Import view coming soon.")
+
+
+
+@login_required
+@permission_required('inventory.add_item', raise_exception=True)
+def add_stock_item(request):
+    if request.method == 'POST':
+        form = AddItemForm(request.POST)
+        if form.is_valid():
+            item = form.save()
+            messages.success(request, f"Item '{item.code}' added successfully.")
+            return redirect('inventory-list')
+    else:
+        form = AddItemForm()
+
+    return render(request, 'inventory/add_stock_item.html', {'form': form})
+
+
+
+def boardstock_list(request):
+    pieces = BoardStock.objects.select_related('parent_board', 'location', 'allocated_to')
+    return render(request, 'inventory/boardstock_list.html', {'pieces': pieces})
+
+
+def boardstock_create(request):
+    if request.method == 'POST':
+        form = BoardStockForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Board stock added successfully.")
+            return redirect('board-stock-list')
+    else:
+        form = BoardStockForm()
+    return render(request, 'inventory/add_board_stock.html', {'form': form})

@@ -1,7 +1,8 @@
 from django.urls import path
 from . import views
-from .views import export_inventory_csv, add_stock_item, import_inventory
+from .views import export_inventory_csv, add_stock_item, import_inventory, boardstock_list, boardstock_create
 from django.http import HttpResponse
+
 urlpatterns = [
     path('stock-in/', views.stock_in, name='stock-in'),
     path('stock-out/', views.stock_out, name='stock-out'),
@@ -16,6 +17,8 @@ urlpatterns = [
     path('add/', add_stock_item, name='add-stock-item'),
     path('import/', import_inventory, name='import-inventory'),
     path('import/', export_inventory_csv, name='export-inventory'),
+    path('boardstock/', views.boardstock_list, name='boardstock-list'),
+    path('boardstock/add/', boardstock_create, name='boardstock-add'),
 ]
 
 

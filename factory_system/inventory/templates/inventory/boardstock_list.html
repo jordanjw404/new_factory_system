@@ -1,0 +1,84 @@
+{% extends "core/base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Board Stock</h2>
+    <p class="text-muted">Showing {{ pieces|length }} piece{{ pieces|length|pluralize }}.</p>
+  
+    <div class="btn-group mb-3">
+      <button class="btn btn-outline-secondary btn-sm" onclick="filterStatus('')">All</button>
+      <button class="btn btn-outline-success btn-sm" onclick="filterStatus('Available')">Available</button>
+      <button class="btn btn-outline-danger btn-sm" onclick="filterStatus('Order #')">Allocated</button>
+    </div>
+  
+    <table id="boardstockTable" class="table table-striped table-hover table-bordered table-sm text-center align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th>Barcode</th>
+          <th>Parent Code</th>
+          <th>Length</th>
+          <th>Width</th>
+          <th>Thickness</th>
+          <th>Location</th>
+          <th>Status</th>
+          <th>Allocated To</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for piece in pieces %}
+        <tr>
+          <td style="word-break: break-word;">{{ piece.barcode_value }}</td>
+          <td>{{ piece.parent_board.code }}</td>
+          <td>{{ piece.length }}</td>
+          <td>{{ piece.width }}</td>
+          <td>{{ piece.thickness }}</td>
+          <td>{{ piece.location }}</td>
+          <td>
+            {% if piece.is_offcut %}
+              <span class="badge bg-warning text-dark">Offcut</span>
+            {% else %}
+              <span class="badge bg-primary">Full</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if piece.allocated_to %}
+              <a href="{% url 'orders:order_detail' piece.allocated_to.id %}" class="text-danger">Order #{{ piece.allocated_to.id }}</a>
+            {% else %}
+              <span class="text-success">Available</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+  <script>
+    let boardTable;
+    function filterStatus(text) {
+      boardTable.search(text).draw();
+    }
+  
+    $(document).ready(function () {
+      boardTable = $('#boardstockTable').DataTable({
+        pageLength: 25,
+        order: [[0, 'asc']],
+        language: {
+          searchPlaceholder: "Search board pieces...",
+          search: "",
+          lengthMenu: "_MENU_ per page",
+          paginate: {
+            previous: "<",
+            next: ">"
+          }
+        }
+      });
+    });
+  </script>
+  
+  
+  
+{% endblock %}

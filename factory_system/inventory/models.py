@@ -3,7 +3,6 @@ from django.db import models
 from django.conf import settings
 from .utils import generate_barcode_image
 
-
 class FactoryArea(models.Model):
     name = models.CharField(max_length=100, unique=True)
 
@@ -47,6 +46,7 @@ class Item(models.Model):
     width = models.PositiveIntegerField(null=True, blank=True)
     length = models.PositiveIntegerField(null=True, blank=True)
     height = models.PositiveIntegerField(null=True, blank=True)
+    depth = models.PositiveIntegerField(null=True, blank=True)
     thickness = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     color = models.CharField(max_length=100, blank=True)
     unit = models.CharField(max_length=10, default="PCS")
@@ -134,3 +134,42 @@ class IncomingOrderItem(models.Model):
 
     def __str__(self):
         return f"{self.item.code} x {self.quantity_expected} → {self.location}"
+
+
+class BoardStock(models.Model):
+    parent_board = models.ForeignKey(
+        Item,
+        on_delete=models.CASCADE,
+        limit_choices_to={'type': 'BOARD'},
+        related_name='pieces'
+    )
+    length = models.PositiveIntegerField()
+    width = models.PositiveIntegerField()
+    thickness = models.DecimalField(max_digits=5, decimal_places=2)
+    location = models.ForeignKey(Location, on_delete=models.CASCADE)
+    is_offcut = models.BooleanField(default=True)
+    allocated_to = models.ForeignKey(
+        'orders.Order', null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name='allocated_stock'
+    )
+    barcode_value = models.CharField(max_length=50, unique=True, blank=True)
+    barcode_image = models.ImageField(upload_to='barcodes/boardstock/', blank=True, null=True)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def is_allocated(self):
+        return self.allocated_to is not None
+
+    def save(self, *args, **kwargs):
+        if not self.barcode_value:
+            self.barcode_value = str(uuid.uuid4().int)[:12]
+        super().save(*args, **kwargs)
+        if not self.barcode_image:
+            barcode_file = generate_barcode_image(self.barcode_value)
+            self.barcode_image.save(f"{self.barcode_value}.png", barcode_file, save=False)
+            super().save(update_fields=["barcode_image"])
+
+    def __str__(self):
+        return f"{'Offcut' if self.is_offcut else 'Full'} - {self.length}x{self.width} ({self.parent_board.code})"
