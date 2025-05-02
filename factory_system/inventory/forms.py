@@ -1,6 +1,7 @@
 from django import forms
-from .models import Item, Location,IncomingOrder, IncomingOrderItem
+from .models import Item, Location, IncomingOrder, IncomingOrderItem
 from django.forms import inlineformset_factory
+
 
 class StockInForm(forms.Form):
     item = forms.ModelChoiceField(queryset=Item.objects.all())
@@ -24,16 +25,25 @@ class TransferForm(forms.Form):
     reason = forms.CharField(required=False)
 
 
-
 class IncomingOrderForm(forms.ModelForm):
     class Meta:
         model = IncomingOrder
         fields = ['supplier', 'order_ref', 'expected_date']
+
 
 IncomingOrderItemFormSet = inlineformset_factory(
     IncomingOrder, IncomingOrderItem,
     fields=('item', 'quantity_expected', 'unit_cost', 'location'),
     extra=5, can_delete=False
 )
-
-
+class AddItemForm(forms.ModelForm):
+    class Meta:
+        model = Item
+        fields = [
+            'code', 'name', 'type', 'description',
+            'width', 'length', 'height', 'thickness',
+            'color', 'unit', 'reorder_level'
+        ]
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 2}),
+        }

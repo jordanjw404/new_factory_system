@@ -6,7 +6,8 @@ from django.db.models import Count, Sum
 from .models import Item, Location, ItemStock, Movement
 from .forms import StockInForm, StockOutForm, TransferForm,IncomingOrderForm, IncomingOrderItemFormSet
 from .models import IncomingOrder
-
+import csv
+from django.http import HttpResponse
 
 
 @login_required
@@ -212,3 +213,29 @@ def incoming_order_detail(request, pk):
     items = order.items.select_related('item', 'location')
     return render(request, 'inventory/incoming_order_detail.html', {'order': order, 'items': items})
 
+
+
+@login_required
+def export_inventory_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="inventory_export.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['ID', 'Code', 'Name', 'Type', 'Quantity', 'Unit'])
+
+    items = Item.objects.all()
+    for item in items:
+        writer.writerow([item.id, item.code, item.name, item.get_type_display(), item.total_quantity or 0, item.unit])
+
+    return response
+
+@login_required
+def add_stock_item(request):
+    return render(request, 'inventory/add_item_form.html')
+
+
+def import_inventory(request):
+    return HttpResponse("Import view coming soon.")
+
+def export_inventory(request):
+    return HttpResponse("Import view coming soon.")

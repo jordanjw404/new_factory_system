@@ -4,6 +4,20 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h2>Inventory Overview</h2>
 </div>
+<div class="btn-group">
+  <a href="{% url 'add-stock-item' %}" class="btn btn-primary">
+    <i class="bi bi-plus-circle"></i> Add Item
+  </a>
+  <a href="{% url 'inventory-export' %}" class="btn btn-outline-secondary">
+    <i class="bi bi-download"></i> Export CSV
+  </a>  
+  <a href="{% url 'import-inventory' %}" class="btn btn-secondary">
+    <i class="bi bi-upload"></i> Import
+  </a>
+  <a href="{% url 'export-inventory' %}" class="btn btn-outline-dark">
+    <i class="bi bi-download"></i> Export
+  </a>
+</div>
 
 <p class="text-muted small ms-2">Showing {{ items|length }} item{{ items|length|pluralize }}.</p>
 
