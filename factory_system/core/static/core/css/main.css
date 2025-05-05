@@ -9,3 +9,9 @@
     opacity: 1;
   }
   
+
+  a.bg-pink {
+    background-color: #f30be3 !important;
+    color: #ffffff !important;
+  }
+  

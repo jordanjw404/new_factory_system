@@ -11,8 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .filters import ProductionStageFilter
 import csv
 from django.http import HttpResponse
-from .models import ProductionStage
-from .filters import ProductionStageFilter
+
 # --- Helper function ---
 def subtract_working_days(from_date, working_days):
     current_date = from_date
@@ -135,6 +134,8 @@ def get_badge_color(status):
         return 'success'
     elif status == 'NO_PAPERWORK':
         return 'danger'
+    elif status == 'Ready':
+        return 'pink' 
     else:
         return 'secondary'
 
