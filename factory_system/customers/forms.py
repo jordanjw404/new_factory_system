@@ -55,3 +55,8 @@ class CustomerForm(forms.ModelForm):
                 Submit("submit", "Save Customer", css_class="btn btn-primary w-100 mt-3")
             )
         )
+
+from django import forms
+
+class CustomerImportForm(forms.Form):
+    csv_file = forms.FileField(label='Upload CSV file')
