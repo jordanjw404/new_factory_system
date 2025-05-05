@@ -1,5 +1,10 @@
 from django.db import models
 from orders.models import Order
+
+
+
+
+
 class ProductionStage(models.Model):
 
     SALES_STATUS = [
@@ -19,6 +24,7 @@ class ProductionStage(models.Model):
         ('ON_HOLD', 'On Hold'),
         ('CANCELLED', 'Cancelled'),
         ('COMPLETED', 'Completed'),
+        ('Ready', 'Ready'),
     ]
 
 
@@ -67,3 +73,23 @@ class ProductionStage(models.Model):
 
     class Meta:
         ordering = ['-order__delivery_date']
+
+    def get_current_stage_name(self):
+        stages = [
+            ("Sales", self.sales_status),
+            ("Programming", self.programming_status),
+            ("Nest", self.nest_status),
+            ("Edge", self.edge_status),
+            ("Prep", self.prep_status),
+            ("Build", self.build_status),
+            ("Fittings", self.fittings_status),
+            ("Wrapping", self.wrapping_status),
+            ("Quality", self.quality_status),
+        ]
+
+        for i, (name, status) in enumerate(stages):
+            if status != 'COMPLETED':
+                if i == 0 or stages[i - 1][1] == 'COMPLETED':
+                    return name
+                return name
+        return "Complete"
