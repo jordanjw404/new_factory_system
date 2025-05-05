@@ -12,6 +12,6 @@ urlpatterns = [
     path('<int:pk>/delete/', views.customer_delete, name='customer_delete'),
     path('export/', views.export_customers_csv, name='export_customers'),
     path('import/', views.import_customers_csv, name='import_customers'),
-
+    path('<int:customer_pk>/documents/<int:doc_pk>/delete/', views.delete_customer_document, name='customer_document_delete'),
 
 ]

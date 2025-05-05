@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.conf import settings
 
 User = get_user_model()  # if using Django's auth User for created_by
 
@@ -37,3 +38,15 @@ class Customer(models.Model):
         ]
         verbose_name = "Customer"
         verbose_name_plural = "Customers"
+
+
+
+class CustomerDocument(models.Model):
+    customer = models.ForeignKey('Customer', related_name='documents', on_delete=models.CASCADE)
+    file = models.FileField(upload_to='customer_documents/')
+    description = models.CharField(max_length=255, blank=True)
+    uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.file.name

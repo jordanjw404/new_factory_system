@@ -1,8 +1,7 @@
 from django import forms
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Row, Column, Field, ButtonHolder
-from .models import Customer
-
+from .models import Customer, CustomerDocument
 class CustomerForm(forms.ModelForm):
     class Meta:
         model = Customer
@@ -56,7 +55,11 @@ class CustomerForm(forms.ModelForm):
             )
         )
 
-from django import forms
 
 class CustomerImportForm(forms.Form):
     csv_file = forms.FileField(label='Upload CSV file')
+
+class CustomerDocumentForm(forms.ModelForm):
+    class Meta:
+        model = CustomerDocument
+        fields = ['file', 'description']

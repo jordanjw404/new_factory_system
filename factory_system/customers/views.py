@@ -1,12 +1,15 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .forms import CustomerForm , CustomerImportForm
-from .models import Customer
+from .forms import CustomerForm , CustomerImportForm, CustomerDocumentForm
+from .models import Customer, CustomerDocument
 from .filters import CustomerFilter
 from django.contrib import messages
 import csv, io
+from django.http import HttpResponse
+from django.db.models import Count
 
-
+# This view handles the creation of a new customer.
+# It uses a form to collect customer details and saves it to the database.
 @login_required
 def customer_create(request):
     if request.method == 'POST':
@@ -20,10 +23,11 @@ def customer_create(request):
         form = CustomerForm()
     return render(request, 'customers/customer_form.html', {'form': form})
 
-from django.db.models import Count
 
-from django.db.models import Count
 
+# This view handles the display of a list of customers.
+# It also allows filtering by status (active/inactive).
+# The queryset is annotated with the number of orders for each customer.
 @login_required
 def customer_list(request):
     # Annotate first
@@ -45,16 +49,24 @@ def customer_list(request):
     })
 
 
-
+# This view handles the display of customer details and the list of customers.
+# It also allows filtering by status (active/inactive).
 @login_required
 def customer_detail_list(request):
-    customers = Customer.objects.all()
-    return render(request, 'customers/customer_detail_list.html', {'customers': customers})
+    status = request.GET.get("status")
+    customers = Customer.objects.annotate(order_count=Count('orders'))
 
-@login_required
-def customer_detail(request, pk):
-    customer = get_object_or_404(Customer, pk=pk)
-    return render(request, 'customers/customer_detail.html', {'customer': customer})
+    if status == "active":
+        customers = customers.filter(is_active=True)
+    elif status == "inactive":
+        customers = customers.filter(is_active=False)
+
+    return render(request, 'customers/customer_detail_list.html', {
+        'customers': customers,
+    })
+
+# This view handles the editing of a customer.
+# It uses a form to update the customer's details.
 
 @login_required
 def customer_edit(request, pk):
@@ -70,7 +82,7 @@ def customer_edit(request, pk):
         form = CustomerForm(instance=customer)
 
     return render(request, 'customers/customer_form.html', {'form': form, 'edit_mode': True})
-
+# This view handles the deletion of a customer.
 @login_required
 def customer_delete(request, pk):
     customer = get_object_or_404(Customer, pk=pk)
@@ -81,11 +93,7 @@ def customer_delete(request, pk):
         return redirect('customers:customer_list')
 
     return render(request, 'customers/customer_confirm_delete.html', {'customer': customer})
-
-import csv
-from django.http import HttpResponse
-from .models import Customer
-
+# This view handles the export of customers to a CSV file.
 @login_required
 def export_customers_csv(request):
     response = HttpResponse(content_type='text/csv')
@@ -118,7 +126,7 @@ def export_customers_csv(request):
         ])
 
     return response
-
+# This view handles the import of customers from a CSV file.
 @login_required
 def import_customers_csv(request):
     if request.method == 'POST':
@@ -152,3 +160,40 @@ def import_customers_csv(request):
         form = CustomerImportForm()
 
     return render(request, 'customers/import_customers.html', {'form': form})
+
+# This view handles the display of customer details and the upload of documents.
+@login_required
+def customer_detail(request, pk):
+    customer = get_object_or_404(Customer, pk=pk)
+    documents = customer.documents.all()
+
+    if request.method == 'POST':
+        form = CustomerDocumentForm(request.POST, request.FILES)
+        if form.is_valid():
+            doc = form.save(commit=False)
+            doc.customer = customer
+            doc.uploaded_by = request.user
+            doc.save()
+            messages.success(request, "File uploaded.")
+            return redirect('customers:customer_detail', pk=pk)
+    else:
+        form = CustomerDocumentForm()
+
+    return render(request, 'customers/customer_detail.html', {
+        'customer': customer,
+        'documents': documents,
+        'doc_form': form,
+    })
+
+#This view handles the deletion of a customer document.
+@login_required
+def delete_customer_document(request, customer_pk, doc_pk):
+    customer = get_object_or_404(Customer, pk=customer_pk)
+    document = get_object_or_404(CustomerDocument, pk=doc_pk, customer=customer)
+
+    if request.method == "POST":
+        document.file.delete(save=False)  # Delete the actual file from media storage
+        document.delete()
+        messages.success(request, "Attachment deleted successfully.")
+
+    return redirect('customers:customer_detail', pk=customer.pk)
