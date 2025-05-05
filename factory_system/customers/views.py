@@ -4,6 +4,7 @@ from .forms import CustomerForm
 from .models import Customer
 from .filters import CustomerFilter
 from django.contrib import messages
+
 @login_required
 def customer_create(request):
     if request.method == 'POST':
@@ -19,7 +20,18 @@ def customer_create(request):
 
 @login_required
 def customer_list(request):
-    customer_filter = CustomerFilter(request.GET, queryset=Customer.objects.all())
+    queryset = Customer.objects.all()
+
+    # Handle status filter manually
+    status = request.GET.get('status')
+    if status == 'active':
+        queryset = queryset.filter(is_active=True)
+    elif status == 'inactive':
+        queryset = queryset.filter(is_active=False)
+
+    # Then pass filtered queryset to your filter
+    customer_filter = CustomerFilter(request.GET, queryset=queryset)
+
     return render(request, 'customers/customer_list.html', {
         'filter': customer_filter,
         'customers': customer_filter.qs,

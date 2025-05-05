@@ -5,19 +5,15 @@
 <div class="container mt-4">
   <h2>Customer Detailed List</h2>
 
-  <!-- Filter Form -->
-  <form method="get" class="row gx-2 gy-1 mb-3 align-items-end">
-    <div class="col-md-4">
-      {{ filter.form.name.label_tag }}
-      {{ filter.form.name|add_class:"form-control form-control-sm" }}
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div class="btn-group">
+      <a href="{% url 'customers:customer_list' %}" class="btn btn-outline-secondary btn-sm {% if not request.GET.status %}active{% endif %}">All</a>
+      <a href="?status=active{% if request.GET.name %}&name={{ request.GET.name }}{% endif %}" class="btn btn-outline-success btn-sm {% if request.GET.status == 'active' %}active{% endif %}">Active</a>
+      <a href="?status=inactive{% if request.GET.name %}&name={{ request.GET.name }}{% endif %}" class="btn btn-outline-danger btn-sm {% if request.GET.status == 'inactive' %}active{% endif %}">Inactive</a>
     </div>
-    <div class="col-md-2 align-self-end">
-      <button type="submit" class="btn btn-sm btn-primary w-100">Filter</button>
-    </div>
-    <div class="col-md-2 align-self-end">
-      <a href="{% url 'customers:customer_detail_list' %}" class="btn btn-sm btn-outline-secondary w-100">Clear</a>
-    </div>
-  </form>
+  
+    <a href="{% url 'customers:customer_create' %}" class="btn btn-outline-success btn-sm">➕ New Customer</a>
+  </div>
 
   <div class="table-responsive mt-3">
     <table id="customerTable" class="table table-hover table-striped table-bordered table-sm align-middle text-center shadow-sm">
