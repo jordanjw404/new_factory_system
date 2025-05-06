@@ -224,9 +224,27 @@ def production_detail_list(request):
     filter = ProductionStageFilter(request.GET, queryset=stages)
     filtered_stages = filter.qs
 
+    status_fields = ['sales', 'programming', 'nest', 'edge', 'prep', 'build', 'fittings', 'wrapping', 'quality']
+
+    badge_colors = {}
+    for stage in filtered_stages:
+        badge_colors[stage.id] = {
+            'sales': get_badge_color(stage.sales_status),
+            'programming': get_badge_color(stage.programming_status),
+            'nest': get_badge_color(stage.nest_status),
+            'edge': get_badge_color(stage.edge_status),
+            'prep': get_badge_color(stage.prep_status),
+            'build': get_badge_color(stage.build_status),
+            'fittings': get_badge_color(stage.fittings_status),
+            'wrapping': get_badge_color(stage.wrapping_status),
+            'quality': get_badge_color(stage.quality_status),
+        }
+
     return render(request, 'production/production_detail_list.html', {
         'filter': filter,
         'stages': filtered_stages,
+        'status_fields': status_fields,
+        'badge_colors': badge_colors,
     })
 
 

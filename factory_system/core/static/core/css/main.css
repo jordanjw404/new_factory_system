@@ -15,3 +15,34 @@
     color: #ffffff !important;
   }
   
+
+  <style>
+  .table-container {
+    max-height: 600px;
+    overflow-x: auto;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+  }
+
+  .table-container table {
+    margin-bottom: 0;
+  }
+
+  /* Optional: prevent body from scrolling horizontally */
+  body {
+    overflow-x: hidden;
+  }
+</style>
+
+
+.table-scroll-wrapper {
+  position: relative;
+}
+
+
+.dropdown-menu {
+  position: absolute !important;
+  z-index: 1050;
+  top: 100%; /* ensure it's below the button */
+  left: 0;
+}
