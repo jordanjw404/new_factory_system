@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from .views import update_target_date
 
 app_name = 'production'
 
@@ -13,5 +14,5 @@ urlpatterns = [
     path('production_export/', views.production_export, name='production_export'),
     path('detail/', views.production_detail_list, name='production_detail_list'),
     path('detail/export/', views.production_detail_export, name='production_detail_export'),
-
+    path('update_date/<int:stage_id>/', update_target_date, name='update_target_date'),
 ]

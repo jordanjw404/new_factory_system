@@ -11,7 +11,10 @@ from django.views.decorators.csrf import csrf_exempt
 from .filters import ProductionStageFilter
 import csv
 from django.http import HttpResponse
-
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse, HttpResponseBadRequest
+from datetime import datetime
+import pandas as pd
 # --- Helper function ---
 def subtract_working_days(from_date, working_days):
     current_date = from_date
@@ -306,3 +309,26 @@ def production_detail_export(request):
         ])
 
     return response
+
+@csrf_exempt
+def update_target_date(request, stage_id):
+    if request.method == 'POST':
+        field = request.POST.get('field')
+        value = request.POST.get('value')
+
+        if not field or not value:
+            return HttpResponseBadRequest("Missing field or value")
+
+        stage = get_object_or_404(ProductionStage, pk=stage_id)
+
+        if not field.endswith('_target_date') or not hasattr(stage, field):
+            return HttpResponseBadRequest("Invalid field")
+
+        try:
+            setattr(stage, field, datetime.strptime(value, "%Y-%m-%d").date())
+            stage.save()
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return HttpResponseBadRequest(f"Failed to save: {str(e)}")
+
+    return HttpResponseBadRequest("Invalid request method")

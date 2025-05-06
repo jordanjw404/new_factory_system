@@ -3,7 +3,6 @@
 
 {% block content %}
 <div class="container mt-4">
-
   <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
     <h2 class="mb-0">Detailed Production List</h2>
     <a href="{% url 'production:production_list' %}" class="btn btn-outline-secondary btn-sm">
@@ -11,6 +10,7 @@
     </a>
   </div>
 
+  <!-- Filters -->
   <div class="collapse p-3 border rounded bg-light mb-3" id="productionFilters">
     <form method="get" class="row gx-2 gy-2 align-items-end">
       {% for field in filter.form.visible_fields %}
@@ -29,6 +29,7 @@
     Showing {{ stages|length }} result{{ stages|length|pluralize }}.
   </p>
 
+  <!-- Table -->
   <div class="table-responsive mt-3">
     <table id="productionDetailTable" class="table table-hover table-bordered table-sm text-center align-middle nowrap w-100">
       <thead class="table-dark">
@@ -47,9 +48,10 @@
         <tr>
           <td>{{ stage.order.reference }}</td>
           <td>{{ stage.order.customer.name }}</td>
+
           {% for field in status_fields %}
           <td>
-            <div class="dropdown position-relative" " data-stage-id="{{ stage.id }}">
+            <div class="dropdown position-relative" data-stage-id="{{ stage.id }}">
               <a class="badge bg-{{ badge_colors|get_item:stage.id|get_item:field|default:'secondary' }} dropdown-toggle text-decoration-none"
                  href="#" role="button" id="dropdownMenu{{ field|capfirst }}{{ stage.id }}" data-bs-toggle="dropdown" aria-expanded="false">
                 {{ stage|get_attr:field|default:"-" }}
@@ -64,8 +66,16 @@
               </ul>
             </div>
           </td>
-          <td>{{ stage|get_target_date:field|date:"d M" }}</td>
+          <td>
+            <input type="text"
+              class="form-control form-control-sm text-center datepicker"
+              data-stage-id="{{ stage.id }}" 
+              data-field="{{ field }}_target_date"
+              value="{{ stage|get_target_date:field|date:'Y-m-d' }}"
+              readonly>
+          </td>
           {% endfor %}
+
           <td>
             <div class="btn-group btn-group-sm">
               <a href="{% url 'production:production_detail' stage.id %}" class="btn btn-outline-primary" title="View"><i class="bi bi-eye"></i></a>
@@ -82,6 +92,7 @@
   </div>
 </div>
 
+<!-- Bottom Actions -->
 <div class="d-flex justify-content-between align-items-center my-3 container">
   <a href="{% url 'production:production_list' %}" class="btn btn-sm btn-outline-secondary">⬅️ Back to Summary</a>
   <a href="{% url 'production:production_detail_export' %}?{{ request.GET.urlencode }}" class="btn btn-sm btn-outline-success">⬇️ Export to Excel</a>
@@ -89,26 +100,88 @@
 {% endblock %}
 
 {% block scripts %}
+<!-- Add flatpickr CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+  .dropdown-menu { z-index: 1060 !important; }
+  .dataTables_scrollBody { overflow: visible !important; }
+  .flatpickr-calendar { z-index: 1070 !important; }
+  .dropdown-menu.drop-up { top: auto !important; bottom: 100%; transform: none !important; margin-bottom: 0.5rem; }
+  .table-responsive { overflow: visible !important; }
+  .dataTables_scrollBody { overflow-x: auto !important; }
+</style>
 <script>
-  $(document).ready(function () {
-    $('#productionDetailTable').DataTable({
-      scrollX: true,
-      autoWidth: false,
-      paging: true,
-      ordering: true,
-      searching: true,
-      info: true,
-      responsive: false,
-      language: {
-        searchPlaceholder: "Quick Search...",
-        search: "",
-        lengthMenu: "_MENU_ entries per page",
-        paginate: {
-          previous: "<",
-          next: ">"
-        }
-      }
-    });
+document.addEventListener('DOMContentLoaded', function () {
+  const table = $('#productionDetailTable').DataTable({
+    scrollX: true,
+    autoWidth: false,
+    paging: true,
+    ordering: true,
+    searching: true,
+    info: true,
+    responsive: false,
+    language: {
+      searchPlaceholder: "Quick Search...",
+      search: "",
+      lengthMenu: "_MENU_ entries per page",
+      paginate: { previous: "<", next: ">" }
+    },
+    initComplete: function() {
+      this.api().columns.adjust();
+    }
   });
+
+  $('#productionDetailTable').on('shown.bs.dropdown', '.dropdown', function(e) {
+    const dropdownMenu = $(this).find('.dropdown-menu');
+    const container = $(this).closest('.dataTables_scrollBody');
+    const dropdownHeight = dropdownMenu.outerHeight();
+    const containerBottom = container.offset().top + container.outerHeight();
+    const dropdownTop = $(this).offset().top;
+
+    if (dropdownTop + dropdownHeight > containerBottom) {
+      dropdownMenu.addClass('drop-up').css({ 'max-height': '200px', 'overflow-y': 'auto' });
+    } else {
+      dropdownMenu.removeClass('drop-up');
+    }
+  }).on('hidden.bs.dropdown', '.dropdown', function() {
+    $(this).find('.dropdown-menu').removeClass('drop-up');
+  });
+
+  fetch('https://www.gov.uk/bank-holidays.json')
+    .then(response => response.json())
+    .then(data => {
+      const bankHolidays = data['england-and-wales'].events.map(event => event.date);
+
+      flatpickr(".datepicker", {
+        dateFormat: "Y-m-d",
+        altInput: true,
+        altFormat: "d M",
+        disable: [
+          function(date) { return date.getDay() === 0 || date.getDay() === 6; },
+          ...bankHolidays
+        ],
+        appendTo: document.body,
+        static: true,
+        position: 'auto',
+        onChange: function(selectedDates, dateStr, instance) {
+          const $input = $(instance.input);
+          const stageId = $input.data('stage-id');
+          const field = $input.data('field');
+
+          if (confirm(`Save ${field.replace('_target_date', '').toUpperCase()} date as ${instance.altInput.value}?`)) {
+            $.ajax({
+              url: `/production/update_date/${stageId}/`,
+              method: 'POST',
+              headers: { 'X-CSRFToken': getCookie('csrftoken') },
+              data: { field: field, value: dateStr },
+              success: () => showToast('✅ Date updated', 'success'),
+              error: () => showToast('❌ Failed to update date', 'danger')
+            });
+          }
+        }
+      });
+    })
+    .catch(error => console.error("Error loading holidays:", error));
+});
 </script>
 {% endblock %}

@@ -1,48 +1,52 @@
-.modal.fade .modal-dialog {
-    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
-    transform: translateY(-10px);
-    opacity: 0;
-  }
-  
-  .modal.show .modal-dialog {
-    transform: translateY(0);
-    opacity: 1;
-  }
-  
-
-  a.bg-pink {
-    background-color: #f30be3 !important;
-    color: #ffffff !important;
-  }
-  
-
-  <style>
-  .table-container {
-    max-height: 600px;
-    overflow-x: auto;
-    overflow-y: auto;
-    border: 1px solid #dee2e6;
-  }
-
-  .table-container table {
-    margin-bottom: 0;
-  }
-
-  /* Optional: prevent body from scrolling horizontally */
-  body {
-    overflow-x: hidden;
-  }
-</style>
-
-
-.table-scroll-wrapper {
-  position: relative;
+/* Resizable table wrapper */
+.resizable-table-wrapper {
+  height: 500px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem;
+  overflow: hidden;
+  background: #fff;
 }
 
+/* Only vertical scroll here */
+#resizable-table-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden; /* Let DataTables handle horizontal scroll */
+  padding: 0.5rem;
+}
 
+/* Sticky table headers */
+#resizable-table-container thead th {
+  position: sticky;
+  top: 0;
+  background-color: #212529;
+  color: white;
+  z-index: 2;
+}
+
+/* Resizing handle */
+.resizable-handle {
+  height: 6px;
+  background-color: #adb5bd;
+  cursor: ns-resize;
+}
+.resizable-handle:hover {
+  background-color: #6c757d;
+}
+
+/* Dropdown fix */
 .dropdown-menu {
   position: absolute !important;
-  z-index: 1050;
-  top: 100%; /* ensure it's below the button */
-  left: 0;
+  z-index: 1060;
+}
+
+.flatpickr-alt-input {
+  width: 100%;
+  text-align: center;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
 }
