@@ -1,0 +1,121 @@
+{% extends "core/base.html" %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <h2 class="mb-0">Item List</h2>
+        <a href="{% url 'inventory:stock_in' %}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-circle"></i> Add New Stock
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="collapse p-3 border rounded bg-light mb-3" id="itemFilters">
+        <form method="get" class="row gx-2 gy-2 align-items-end">
+            {% for field in filter.form.visible_fields %}
+                <div class="col-md-3">
+                    {{ field.label_tag }} {{ field|add_class:"form-select form-select-sm" }}
+                </div>
+            {% endfor %}
+            <div class="col-md-2 text-end">
+                <button type="submit" class="btn btn-sm btn-primary w-100">Filter</button>
+                <a href="{% url 'inventory:item_list' %}" class="btn btn-sm btn-outline-secondary w-100 mt-2">Clear</a>
+            </div>
+        </form>
+    </div>
+
+    <p class="text-muted small ms-2">
+        Showing {{ items|length }} result{{ items|length|pluralize }}.
+    </p>
+
+    <!-- Item Table -->
+    <div class="table-responsive mt-3">
+        <table id="itemTable" class="table table-hover table-bordered table-sm text-center align-middle nowrap w-100">
+            <thead class="table-dark">
+                <tr>
+                    <th>Code</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Unit</th>
+                    <th>Total Stock</th>
+                    <th>Reorder Level</th>
+                    <th>Supplier</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.code }}</td>
+                    <td><a href="{% url 'inventory:item_detail' item.pk %}">{{ item.name }}</a></td>
+                    <td>{{ item.get_type_display }}</td>
+                    <td>{{ item.unit }}</td>
+                    <td>{{ item.total_stock }}</td>
+                    <td>{% if item.needs_reorder %}<span class="badge bg-danger">{{ item.reorder_level }}</span>{% else %}{{ item.reorder_level }}{% endif %}</td>
+                    <td>{{ item.supplier.name }}</td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'inventory:item_detail' item.pk %}" class="btn btn-outline-primary" title="View"><i class="bi bi-eye"></i></a>
+                            <a href="{% url 'inventory:item_edit' item.pk %}" class="btn btn-outline-warning" title="Edit"><i class="bi bi-pencil-square"></i></a>
+                            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ item.pk }}"><i class="bi bi-trash3"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8">No items found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Delete Modals -->
+{% for item in items %}
+<div class="modal fade" id="deleteModal{{ item.pk }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ item.pk }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel{{ item.pk }}">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete <strong>{{ item.name }}</strong> ({{ item.code }})?
+            </div>
+            <div class="modal-footer">
+                <form method="post" action="{% url 'inventory:item_delete' item.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        $('#itemTable').DataTable({
+            scrollX: true,
+            autoWidth: false,
+            paging: true,
+            ordering: true,
+            searching: true,
+            info: true,
+            responsive: false,
+            language: {
+                searchPlaceholder: "Quick Search...",
+                search: "",
+                lengthMenu: "_MENU_ entries per page",
+                paginate: { previous: "<", next: ">" }
+            },
+            initComplete: function() {
+                this.api().columns.adjust();
+            }
+        });
+    });
+</script>
+{% endblock %}
