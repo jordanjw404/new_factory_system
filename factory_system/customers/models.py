@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.conf import settings
 
-User = get_user_model()  # if using Django's auth User for created_by
+User = get_user_model() 
 
 class Customer(models.Model):
     name = models.CharField(max_length=30, help_text="Company or Customer name")
@@ -24,14 +24,14 @@ class Customer(models.Model):
     )
 
     def __str__(self):
-        return self.name  # Use the customer name for easy identification
+        return self.name  # This uses the customer name 
 
     def get_full_contact(self):
         """Return a one-line summary of the primary contact."""
         return f"{self.contact_name} <{self.email}>"
 
     class Meta:
-        ordering = ["name"]  # Default ordering by name for convenience
+        ordering = ["name"]  # Default ordering by name
         indexes = [
             models.Index(fields=["name"]),   # Index on name for fast lookup
             models.Index(fields=["email"]),  # Index on email for fast lookup

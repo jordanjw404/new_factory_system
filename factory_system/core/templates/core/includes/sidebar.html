@@ -10,7 +10,7 @@
         </a>
       </li>
   
-      <!-- Orders -->
+      <!-- Orders Dropdown -->
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle text-white" href="#" id="orderMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
           <i class="bi bi-file-earmark-text"></i> Orders
@@ -22,7 +22,7 @@
         </ul>
       </li>
   
-      <!-- Customers -->
+      <!-- Customers Dropdown -->
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle text-white" href="#" id="customerMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
           <i class="bi bi-people"></i> Customers
@@ -34,7 +34,7 @@
         </ul>
       </li>
   
-      <!-- Production -->
+      <!-- Production Dropdown-->
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle text-white" href="#" id="productionMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
           <i class="bi bi-gear"></i> Production
@@ -52,20 +52,14 @@
         </ul>
       </li>
   
-<!-- Inventory -->
+<!-- Inventory Drop down -->
 <li class="nav-item dropdown">
   <a class="nav-link dropdown-toggle text-white" href="#" id="inventoryMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     <i class="bi bi-box-seam"></i> Inventory
   </a>
   <ul class="dropdown-menu" aria-labelledby="inventoryMenu">
-    <li><a class="dropdown-item" href="{% url 'inventory-list' %}">Inventory List</a></li>
-    <li><a class="dropdown-item" href="{% url 'stock-in' %}">Stock In</a></li>
-    <li><a class="dropdown-item" href="{% url 'stock-out' %}">Stock Out</a></li>
-    <li><a class="dropdown-item" href="{% url 'stock-transfer' %}">Stock Transfer</a></li>
-    <li><a class="dropdown-item" href="{% url 'movement-log' %}">Movement Log</a></li>
-    <li><a class="dropdown-item" href="{% url 'incoming-order-create' %}">➕ New Incoming Order</a></li>
-    <li><a class="dropdown-item" href="{% url 'incoming-order-list' %}">Incoming Orders</a></li>
-    <li><a class="dropdown-item" href="{% url 'boardstock-list' %}"> Board Stock</a></li>
+    <li><a class="dropdown-item" href="{% url 'inventory:inventory_list' %}">Inventory List</a></li>
+
     </li>
   </ul>
 </li>
