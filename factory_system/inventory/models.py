@@ -117,9 +117,9 @@ class Transaction(models.Model):
     barcode = models.CharField(max_length=100)
     transaction_type = models.CharField(max_length=4, choices=TRANSACTION_TYPES)
     quantity = models.PositiveIntegerField()
-    from_location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, blank=True, related_name='transactions_from')
-    to_location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, blank=True, related_name='transactions_to')
-    order = models.ForeignKey(Order, on_delete=models.SET_NULL, null=True, blank=True)
+    from_location = models.ForeignKey("inventory.Location", on_delete=models.SET_NULL, null=True, blank=True, related_name='transactions_from')
+    to_location = models.ForeignKey("inventory.Location", on_delete=models.SET_NULL, null=True, blank=True, related_name='transactions_to')
+    order = models.ForeignKey("inventory.Order", on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
