@@ -22,3 +22,21 @@ def hardware_list(request):
 def edgebanding_list(request):
     return HttpResponse("Edge Banding List")
 
+<<<<<<< HEAD
+=======
+def inventory_list(request):
+    return HttpResponse("Inventory List")
+
+def cabinet_list(request):
+    return HttpResponse("Cabinet List")
+
+def board_list(request):
+    return HttpResponse("Board List")
+
+def hardware_list(request):
+    return HttpResponse("Hardware List")
+
+def edgebanding_list(request):
+    return HttpResponse("Edge Banding List")
+
+>>>>>>> b56bbc1 (Refactor inventory URLs and views; add specific views for cabinets, boards, hardware, and edge banding)
