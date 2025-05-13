@@ -4,6 +4,7 @@
         <i class="bi bi-grid me-2"></i> Factory System
     </h5>
     <ul class="nav flex-column">
+<<<<<<< HEAD
 
         <!-- Dashboard -->
         <li class="nav-item mb-2">
@@ -104,5 +105,78 @@
                 <i class="bi bi-person-plus me-2"></i> Create User
             </a>
         </li>
+=======
+  
+      <!-- Dashboard -->
+      <li class="nav-item">
+        <a href="/dashboard/" class="nav-link text-white">
+          <i class="bi bi-house"></i> Dashboard
+        </a>
+      </li>
+  
+      <!-- Orders Dropdown -->
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle text-white" href="#" id="orderMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="bi bi-file-earmark-text"></i> Orders
+        </a>
+        <ul class="dropdown-menu" aria-labelledby="orderMenu">
+          <li><a class="dropdown-item" href="{% url 'orders:order_list' %}">Order List</a></li>
+          <li><a class="dropdown-item" href="{% url 'orders:order_create' %}">Create Order</a></li>
+          <li><a class="dropdown-item" href="{% url 'orders:order_detail_list' %}">Order Detail List</a></li>
+        </ul>
+      </li>
+  
+      <!-- Customers Dropdown -->
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle text-white" href="#" id="customerMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="bi bi-people"></i> Customers
+        </a>
+        <ul class="dropdown-menu" aria-labelledby="customerMenu">
+          <li><a class="dropdown-item" href="{% url 'customers:customer_list' %}">Customer List</a></li>
+          <li><a class="dropdown-item" href="{% url 'customers:customer_detail_list' %}">Customer Detail List</a></li>
+          <li><a class="dropdown-item" href="{% url 'customers:customer_create' %}">Create Customer</a></li>
+        </ul>
+      </li>
+  
+      <!-- Production Dropdown-->
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle text-white" href="#" id="productionMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="bi bi-gear"></i> Production
+        </a>
+        <ul class="dropdown-menu" aria-labelledby="productionMenu">
+          <li>
+            <a class="dropdown-item" href="{% url 'production:production_list' %}">Production List</a>
+          </li>
+          <li>
+            <a class="dropdown-item" href="{% url 'production:production_create' %}">Create Production</a>
+          </li>
+          <li class="nav-item">
+            <a class="dropdown-item" href="{% url 'production:production_detail_list' %}">Production Detail List</a>
+          </li>
+        </ul>
+      </li>
+  
+<!-- Inventory Drop down -->
+<li class="nav-item dropdown">
+  <a class="nav-link dropdown-toggle text-white" href="#" id="inventoryMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <i class="bi bi-box-seam"></i> Inventory
+  </a>
+  <ul class="dropdown-menu" aria-labelledby="inventoryMenu">
+    <li>
+      <a class="dropdown-item" href="{% url 'inventory:inventory_list' %}">Inventory List</a></li>
+    </li>
+  </ul>
+</li>
+
+  
+      <!-- Create User -->
+      <li class="nav-item">
+        <a href="/create-user/" class="nav-link text-white">
+          <i class="bi bi-person-plus"></i> Create User
+        </a>
+      </li>
+  
+  
+>>>>>>> d92dd45 (Implement inventory list view and template; add slug fields to models for better URL handling)
     </ul>
 </div>

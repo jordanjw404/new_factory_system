@@ -159,6 +159,7 @@ class Transaction(models.Model):
     transaction_type = models.CharField(max_length=4, choices=TRANSACTION_TYPES)
     quantity = models.PositiveIntegerField()
 <<<<<<< HEAD
+<<<<<<< HEAD
     from_location = models.ForeignKey("Location", on_delete=models.SET_NULL, null=True, blank=True, related_name='transactions_from')
     to_location = models.ForeignKey("Location", on_delete=models.SET_NULL, null=True, blank=True, related_name='transactions_to')
 =======
@@ -166,6 +167,10 @@ class Transaction(models.Model):
     to_location = models.ForeignKey("inventory.Location", on_delete=models.SET_NULL, null=True, blank=True, related_name='transactions_to')
     order = models.ForeignKey("inventory.Order", on_delete=models.SET_NULL, null=True, blank=True)
 >>>>>>> b56bbc1 (Refactor inventory URLs and views; add specific views for cabinets, boards, hardware, and edge banding)
+=======
+    from_location = models.ForeignKey("Location", on_delete=models.SET_NULL, null=True, blank=True, related_name='transactions_from')
+    to_location = models.ForeignKey("Location", on_delete=models.SET_NULL, null=True, blank=True, related_name='transactions_to')
+>>>>>>> d92dd45 (Implement inventory list view and template; add slug fields to models for better URL handling)
     created_at = models.DateTimeField(auto_now_add=True)
     slug = models.SlugField(unique=True, blank=True)
 
