@@ -1,8 +1,14 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.contrib.contenttypes.models import ContentType
+from .models import Inventory
 
-def inventory_list(request):
-    return HttpResponse("Inventory List")
+def inventory_list_view(request):
+    inventory_items = Inventory.objects.select_related('location').all()
+    context = {
+        'inventory_items': inventory_items,
+    }
+    return render(request, 'inventory/inventory_list.html', context)
+
 
 def cabinet_list(request):
     return HttpResponse("Cabinet List")

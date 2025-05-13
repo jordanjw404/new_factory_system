@@ -76,7 +76,6 @@ TEMPLATES = [
         },
     },
 ]
-
 WSGI_APPLICATION = 'factory_system.wsgi.application'
 
 
