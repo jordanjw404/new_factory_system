@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'django_tables2',
     'inventory',
+    'factory_kpis',
+    'employees',
 ]
 
 MIDDLEWARE = [
