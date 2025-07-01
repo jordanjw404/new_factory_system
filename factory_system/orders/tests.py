@@ -23,7 +23,7 @@ class OrderCreateViewTests(TestCase):
             "reference": "REF123",
             "delivery_date": "2025-05-01",
             "order_type": "KITCHEN",
-            "status": "PENDING",
+            "status": "NO_PAPERWORK",
             "robes": 3,
             "cabs": 5,
             "panels": 7,
