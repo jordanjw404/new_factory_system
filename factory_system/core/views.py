@@ -23,16 +23,12 @@ def UserView(request):
 # ✅ Login view (public)
 class CustomLoginView(LoginView):
     template_name = 'core/pages/login.html'
-
-
-def root_redirect_view(request):
-    return redirect('login')
-
-
-class CustomLoginView(LoginView):
-    template_name = 'core/pages/login.html'
     authentication_form = CustomLoginForm
 
     def get_success_url(self):
         return '/dashboard/'
+
+
+def root_redirect_view(request):
+    return redirect('login')
 
