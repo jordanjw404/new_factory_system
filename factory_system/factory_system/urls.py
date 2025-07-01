@@ -28,6 +28,7 @@ urlpatterns = [
     path("inventory/", include("inventory.urls", namespace="inventory")),
     path('inventory/', include(('inventory.urls', 'inventory'), namespace='inventory')),
     path("inventory/", include("inventory.urls", namespace="inventory")),
+    path('dashboard/', include('dashboards.urls')),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

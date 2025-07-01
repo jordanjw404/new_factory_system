@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'inventory',
     'factory_kpis',
     'employees',
+    'dashboards',
 ]
 
 MIDDLEWARE = [
