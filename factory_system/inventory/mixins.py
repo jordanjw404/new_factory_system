@@ -2,7 +2,7 @@ import os
 import uuid
 from django.db import models
 from django.conf import settings
-from barcode import Code128
+import barcode
 from barcode.writer import ImageWriter
 
 
@@ -14,22 +14,24 @@ class BarcodeMixin(models.Model):
         abstract = True
 
     def save(self, *args, **kwargs):
-        # Generate barcode image if not already set
+        # Generate barcode before saving if not already set
         if not self.barcode_image:
             self.generate_barcode_image()
-        
         super().save(*args, **kwargs)
 
     def generate_barcode_image(self):
-        barcode_path = os.path.join(settings.MEDIA_ROOT, "barcodes")
-        os.makedirs(barcode_path, exist_ok=True)
+        # Ensure barcode directory exists
+        barcode_dir = os.path.join(settings.MEDIA_ROOT, "barcodes")
+        os.makedirs(barcode_dir, exist_ok=True)
 
-        barcode_filename = f"{self.barcode}.png"
-        barcode_filepath = os.path.join(barcode_path, barcode_filename)
+        # Construct the file path
+        filename = f"{self.barcode}.png"
+        full_path = os.path.join(barcode_dir, filename)
 
-        # Generate the barcode image
-        code128 = Code128(self.barcode, writer=ImageWriter())
-        code128.save(barcode_filepath)
+        # Get barcode class and generate image
+        code128 = barcode.get_barcode_class('code128')
+        code = code128(str(self.barcode), writer=ImageWriter())
+        code.save(full_path[:-4])  # python-barcode adds .png itself
 
-        # Set the image field
-        self.barcode_image = f"barcodes/{barcode_filename}"
+        # Set the image path relative to MEDIA_ROOT
+        self.barcode_image = f"barcodes/{filename}"

@@ -2,11 +2,7 @@ from django.db import models
 from orders.models import Order
 
 
-
-
-
 class ProductionStage(models.Model):
-
     SALES_STATUS = [
         ('NOT_STARTED', 'Not Started'),
         ('IN_PROGRESS', 'In Progress'),
@@ -24,9 +20,8 @@ class ProductionStage(models.Model):
         ('ON_HOLD', 'On Hold'),
         ('CANCELLED', 'Cancelled'),
         ('COMPLETED', 'Completed'),
-        ('Ready', 'Ready'),
+        ('READY', 'Ready'),
     ]
-
 
     order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='production_stage')
 
@@ -41,7 +36,7 @@ class ProductionStage(models.Model):
     wrapping_status = models.CharField(max_length=20, choices=STAGE_STATUS, default='NOT_STARTED')
     quality_status = models.CharField(max_length=20, choices=STAGE_STATUS, default='NOT_STARTED')
 
-    # Target Dates per Stage
+    # Target Dates
     sales_target_date = models.DateField(null=True, blank=True)
     programming_target_date = models.DateField(null=True, blank=True)
     nest_target_date = models.DateField(null=True, blank=True)
@@ -86,10 +81,24 @@ class ProductionStage(models.Model):
             ("Wrapping", self.wrapping_status),
             ("Quality", self.quality_status),
         ]
-
         for i, (name, status) in enumerate(stages):
             if status != 'COMPLETED':
                 if i == 0 or stages[i - 1][1] == 'COMPLETED':
                     return name
                 return name
         return "Complete"
+
+    def all_stages_completed(self):
+        return all(
+            status == 'COMPLETED' for status in [
+                self.sales_status,
+                self.programming_status,
+                self.nest_status,
+                self.edge_status,
+                self.prep_status,
+                self.build_status,
+                self.fittings_status,
+                self.wrapping_status,
+                self.quality_status,
+            ]
+        )

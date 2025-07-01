@@ -1,187 +1,89 @@
 {% extends "core/base.html" %}
+{% load static %}
 {% load widget_tweaks dict_extras %}
 
 {% block content %}
-<div class="container mt-4">
-  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-    <h2 class="mb-0">Detailed Production List</h2>
-    <a href="{% url 'production:production_list' %}" class="btn btn-outline-secondary btn-sm">
-      <i class="bi bi-arrow-left"></i> Back to Summary
-    </a>
-  </div>
-
-  <!-- Filters -->
-  <div class="collapse p-3 border rounded bg-light mb-3" id="productionFilters">
-    <form method="get" class="row gx-2 gy-2 align-items-end">
-      {% for field in filter.form.visible_fields %}
-        <div class="col-md-3">
-          {{ field.label_tag }} {{ field|add_class:"form-select form-select-sm" }}
-        </div>
-      {% endfor %}
-      <div class="col-md-2 text-end">
-        <button type="submit" class="btn btn-sm btn-primary w-100">Filter</button>
-        <a href="{% url 'production:production_detail_list' %}" class="btn btn-sm btn-outline-secondary w-100 mt-2">Clear</a>
-      </div>
-    </form>
-  </div>
-
-  <p class="text-muted small ms-2">
-    Showing {{ stages|length }} result{{ stages|length|pluralize }}.
-  </p>
-
-  <!-- Table -->
-  <div class="table-responsive mt-3">
-    <table id="productionDetailTable" class="table table-hover table-bordered table-sm text-center align-middle nowrap w-100">
-      <thead class="table-dark">
-        <tr>
-          <th>Order Ref</th>
-          <th>Customer</th>
-          {% for field in status_fields %}
-            <th>{{ field|capfirst }}</th>
-            <th>Date</th>
-          {% endfor %}
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for stage in stages %}
-        <tr>
-          <td>{{ stage.order.reference }}</td>
-          <td>{{ stage.order.customer.name }}</td>
-
-          {% for field in status_fields %}
-          <td>
-            <div class="dropdown position-relative" data-stage-id="{{ stage.id }}">
-              <a class="badge bg-{{ badge_colors|get_item:stage.id|get_item:field|default:'secondary' }} dropdown-toggle text-decoration-none"
-                 href="#" role="button" id="dropdownMenu{{ field|capfirst }}{{ stage.id }}" data-bs-toggle="dropdown" aria-expanded="false">
-                {{ stage|get_attr:field|default:"-" }}
-              </a>
-              <ul class="dropdown-menu" aria-labelledby="dropdownMenu{{ field|capfirst }}{{ stage.id }}">
-                <li><a class="dropdown-item" href="#" onclick="updateStatus('{{ stage.id }}', '{{ field }}_status', 'NOT_STARTED')">Not Started</a></li>
-                <li><a class="dropdown-item" href="#" onclick="updateStatus('{{ stage.id }}', '{{ field }}_status', 'IN_PROGRESS')">In Progress</a></li>
-                <li><a class="dropdown-item" href="#" onclick="updateStatus('{{ stage.id }}', '{{ field }}_status', 'STUCK')">Stuck</a></li>
-                <li><a class="dropdown-item" href="#" onclick="updateStatus('{{ stage.id }}', '{{ field }}_status', 'ON_HOLD')">On Hold</a></li>
-                <li><a class="dropdown-item" href="#" onclick="updateStatus('{{ stage.id }}', '{{ field }}_status', 'COMPLETED')">Completed</a></li>
-                <li><a class="dropdown-item" href="#" onclick="updateStatus('{{ stage.id }}', '{{ field }}_status', 'Ready')">Ready</a></li>
-              </ul>
-            </div>
-          </td>
-          <td>
-            <input type="text"
-              class="form-control form-control-sm text-center datepicker"
-              data-stage-id="{{ stage.id }}" 
-              data-field="{{ field }}_target_date"
-              value="{{ stage|get_target_date:field|date:'Y-m-d' }}"
-              readonly>
-          </td>
-          {% endfor %}
-
-          <td>
-            <div class="btn-group btn-group-sm">
-              <a href="{% url 'production:production_detail' stage.id %}" class="btn btn-outline-primary" title="View"><i class="bi bi-eye"></i></a>
-              <a href="{% url 'production:production_edit' stage.id %}" class="btn btn-outline-warning" title="Edit"><i class="bi bi-pencil-square"></i></a>
-              <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ stage.id }}"><i class="bi bi-trash3"></i></button>
-            </div>
-          </td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="100">No production stages found.</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>Detailed Production List</h2>
 </div>
 
-<!-- Bottom Actions -->
-<div class="d-flex justify-content-between align-items-center my-3 container">
-  <a href="{% url 'production:production_list' %}" class="btn btn-sm btn-outline-secondary">⬅️ Back to Summary</a>
-  <a href="{% url 'production:production_detail_export' %}?{{ request.GET.urlencode }}" class="btn btn-sm btn-outline-success">⬇️ Export to Excel</a>
+<p class="text-muted small ms-2">
+  Showing {{ stages|length }} result{{ stages|length|pluralize }}.
+</p>
+
+<div class="table-responsive">
+  <table id="productionDetailTable" class="table table-bordered table-sm text-center align-middle w-100">
+    <thead class="table-dark">
+      <tr>
+        <th>Order Ref</th>
+        <th>Customer</th>
+        {% for field in status_fields %}
+          <th>{{ field|capfirst }}<br>Status</th>
+          <th>{{ field|capfirst }}<br>Target</th>
+          <th>{{ field|capfirst }}<br>Completed</th>
+        {% endfor %}
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for stage in stages %}
+      <tr>
+        <td>{{ stage.order.reference }}</td>
+        <td>{{ stage.order.customer.name }}</td>
+
+        {% for field in status_fields %}
+        <td>
+          <div class="dropdown" data-stage-id="{{ stage.id }}">
+            <a class="badge bg-{{ badge_colors|get_item:stage.id|get_item:field|default:'secondary' }} dropdown-toggle text-decoration-none"
+               href="#" role="button"
+               id="dropdownMenu{{ field }}{{ stage.id }}"
+               data-bs-toggle="dropdown" aria-expanded="false">
+              {% with full_field=field|add:"_status" %}
+                {{ stage|get_status_display:full_field|default:"-" }}
+              {% endwith %}
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenu{{ field }}{{ stage.id }}">
+              <li><a class="dropdown-item" href="#" data-action="update-status" data-stage-id="{{ stage.id }}" data-field="{{ field }}_status" data-value="NOT_STARTED">Not Started</a></li>
+              <li><a class="dropdown-item" href="#" data-action="update-status" data-stage-id="{{ stage.id }}" data-field="{{ field }}_status" data-value="IN_PROGRESS">In Progress</a></li>
+              <li><a class="dropdown-item" href="#" data-action="update-status" data-stage-id="{{ stage.id }}" data-field="{{ field }}_status" data-value="STUCK">Stuck</a></li>
+              <li><a class="dropdown-item" href="#" data-action="update-status" data-stage-id="{{ stage.id }}" data-field="{{ field }}_status" data-value="ON_HOLD">On Hold</a></li>
+              <li><a class="dropdown-item" href="#" data-action="update-status" data-stage-id="{{ stage.id }}" data-field="{{ field }}_status" data-value="COMPLETED">Completed</a></li>
+              <li><a class="dropdown-item" href="#" data-action="update-status" data-stage-id="{{ stage.id }}" data-field="{{ field }}_status" data-value="READY">Ready</a></li>
+            </ul>
+          </div>
+        </td>
+        <td>{{ stage|get_target_date:field|date:"Y-m-d" }}</td>
+        <td>{{ stage|get_completed_date:field|date:"Y-m-d" }}</td>
+        {% endfor %}
+
+        <td>
+          <div class="btn-group btn-group-sm">
+            <a href="{% url 'production:production_detail' stage.id %}" class="btn btn-outline-primary" title="View"><i class="bi bi-eye"></i></a>
+            <a href="{% url 'production:production_edit' stage.id %}" class="btn btn-outline-warning" title="Edit"><i class="bi bi-pencil-square"></i></a>
+            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ stage.id }}"><i class="bi bi-trash3"></i></button>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="100%">No production stages found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="d-flex justify-content-end mt-3">
+  <a href="{% url 'production:production_detail_export' %}?{{ request.GET.urlencode }}" class="btn btn-sm btn-success">⬇️ Export to CSV</a>
 </div>
 {% endblock %}
 
+
 {% block scripts %}
-<!-- Add flatpickr CSS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<style>
-  .dropdown-menu { z-index: 1060 !important; }
-  .dataTables_scrollBody { overflow: visible !important; }
-  .flatpickr-calendar { z-index: 1070 !important; }
-  .dropdown-menu.drop-up { top: auto !important; bottom: 100%; transform: none !important; margin-bottom: 0.5rem; }
-  .table-responsive { overflow: visible !important; }
-  .dataTables_scrollBody { overflow-x: auto !important; }
-</style>
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-  const table = $('#productionDetailTable').DataTable({
-    scrollX: true,
-    autoWidth: false,
-    paging: true,
-    ordering: true,
-    searching: true,
-    info: true,
-    responsive: false,
-    language: {
-      searchPlaceholder: "Quick Search...",
-      search: "",
-      lengthMenu: "_MENU_ entries per page",
-      paginate: { previous: "<", next: ">" }
-    },
-    initComplete: function() {
-      this.api().columns.adjust();
-    }
-  });
+<!-- Load jQuery first -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-  $('#productionDetailTable').on('shown.bs.dropdown', '.dropdown', function(e) {
-    const dropdownMenu = $(this).find('.dropdown-menu');
-    const container = $(this).closest('.dataTables_scrollBody');
-    const dropdownHeight = dropdownMenu.outerHeight();
-    const containerBottom = container.offset().top + container.outerHeight();
-    const dropdownTop = $(this).offset().top;
+<!-- Then load DataTables -->
+<script src="https://cdn.datatables.net/v/dt/dt-1.11.5/datatables.min.js"></script>
 
-    if (dropdownTop + dropdownHeight > containerBottom) {
-      dropdownMenu.addClass('drop-up').css({ 'max-height': '200px', 'overflow-y': 'auto' });
-    } else {
-      dropdownMenu.removeClass('drop-up');
-    }
-  }).on('hidden.bs.dropdown', '.dropdown', function() {
-    $(this).find('.dropdown-menu').removeClass('drop-up');
-  });
-
-  fetch('https://www.gov.uk/bank-holidays.json')
-    .then(response => response.json())
-    .then(data => {
-      const bankHolidays = data['england-and-wales'].events.map(event => event.date);
-
-      flatpickr(".datepicker", {
-        dateFormat: "Y-m-d",
-        altInput: true,
-        altFormat: "d M",
-        disable: [
-          function(date) { return date.getDay() === 0 || date.getDay() === 6; },
-          ...bankHolidays
-        ],
-        appendTo: document.body,
-        static: true,
-        position: 'auto',
-        onChange: function(selectedDates, dateStr, instance) {
-          const $input = $(instance.input);
-          const stageId = $input.data('stage-id');
-          const field = $input.data('field');
-
-          if (confirm(`Save ${field.replace('_target_date', '').toUpperCase()} date as ${instance.altInput.value}?`)) {
-            $.ajax({
-              url: `/production/update_date/${stageId}/`,
-              method: 'POST',
-              headers: { 'X-CSRFToken': getCookie('csrftoken') },
-              data: { field: field, value: dateStr },
-              success: () => showToast('✅ Date updated', 'success'),
-              error: () => showToast('❌ Failed to update date', 'danger')
-            });
-          }
-        }
-      });
-    })
-    .catch(error => console.error("Error loading holidays:", error));
-});
-</script>
+<!-- Then your custom script -->
+<script src="{% static 'production/js/production.js' %}"></script>
 {% endblock %}

@@ -1,15 +1,27 @@
-<!-- core/templates/core/base.html -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="light">
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}Factory System{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <!-- Enhanced CSP with additional security headers -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' https://cdn.jsdelivr.net https://code.jquery.com https://cdn.datatables.net;
+        style-src 'self' https://cdn.jsdelivr.net https://cdn.datatables.net 'unsafe-inline';
+        font-src 'self' https://cdn.jsdelivr.net data:;
+        img-src 'self' data:;
+        connect-src 'self';
+        form-action 'self';
+        frame-ancestors 'none';
+    ">
     {% load static %}
 
-    <!-- Main CSS -->
-    <link rel="stylesheet" href="{% static 'core/css/main.css' %}">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <!-- Preconnect for performance optimization -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://cdn.datatables.net">
+    
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -19,62 +31,157 @@
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.4.1/css/responsive.bootstrap5.min.css">
+
+    <!-- Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="{% static 'core/css/main.css' %}">
 </head>
 
 <body>
-    <div class="d-flex min-vh-100" id="wrapper">
+    <!-- Skip Navigation for Accessibility -->
+    <a href="#main-content" class="visually-hidden visually-hidden-focusable position-absolute top-0 start-0 p-2 bg-dark text-white" style="z-index: 9999;">
+        Skip to main content
+    </a>
+    
+    <div class="d-flex flex-shrink min-vh-100" id="wrapper">
         {% include 'core/includes/sidebar.html' %}
 
         <div id="page-content-wrapper" class="flex-grow-1 d-flex flex-column">
             {% include 'core/includes/navbar.html' %}
+        
 
-            <div class="container-fluid mt-4 flex-grow-1">
+            <!-- Main Content -->
+            <main id="main-content" class="container-fluid mt-4 flex-grow-1">
                 {% block content %}{% endblock %}
-            </div>
+            </main>
 
             {% include 'core/includes/footer.html' %}
         </div>
     </div>
 
+    <!-- Toast Messages -->
     {% if messages %}
     <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
         {% for message in messages %}
-        <div class="toast align-items-center text-white bg-{{ message.tags }} border-0 show fade" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast align-items-center text-white bg-{{ message.tags }} border-0 show fade" 
+             role="alert" aria-live="assertive" aria-atomic="true"
+             data-bs-delay="5000" data-bs-autohide="true">
             <div class="d-flex">
                 <div class="toast-body">
                     {{ message }}
                 </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" 
+                        data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
         </div>
         {% endfor %}
     </div>
     {% endif %}
+    
+    <!-- Error Boundary -->
+    <div id="error-boundary" class="position-fixed top-0 start-0 w-100 p-3" style="display: none; z-index: 9997;">
+        <div class="alert alert-danger m-0">
+            <h4 class="alert-heading">Application Error</h4>
+            <p>Something went wrong. Please try again later or contact support.</p>
+            <button class="btn btn-sm btn-outline-danger" onclick="location.reload()">Reload Page</button>
+        </div>
+    </div>
 
-    <!-- Bootstrap Bundle JS -->
+    <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Core Libraries -->
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-
-    <!-- DataTables JS -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js" 
+            integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" 
+            crossorigin="anonymous"></script>
+    
+    <!-- DataTables -->
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.4.1/js/responsive.bootstrap5.min.js"></script>
 
-    <!-- Page Scripts (Toast handling etc.) -->
+    <!-- Flatpickr -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <!-- Toast Initialization -->
+    <script src="{% static 'core/js/toast.js' %}"></script>
+    
+    <!-- Core Application Script (without spinner) -->
     <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var toastElList = [].slice.call(document.querySelectorAll('.toast'));
-        toastElList.forEach(function (toastEl) {
-            new bootstrap.Toast(toastEl).show();
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle sidebar
+        const menuToggle = document.getElementById('menu-toggle');
+        const sidebarToggle = document.querySelector('.sidebar-toggle');
+        const sidebar = document.querySelector('.sidebar');
+        
+        const toggleSidebar = () => {
+            sidebar.classList.toggle('collapsed');
+            // Save state in localStorage
+            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+            // Update tooltips
+            updateSidebarTooltips();
+        };
+        
+        // Initialize tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+        
+        // Restore sidebar state
+        if (localStorage.getItem('sidebarCollapsed') === 'true') {
+            sidebar.classList.add('collapsed');
+        }
+        
+        // Add tooltips to nav items when collapsed
+        function updateSidebarTooltips() {
+            document.querySelectorAll('.sidebar .nav-link').forEach(item => {
+                if (sidebar.classList.contains('collapsed')) {
+                    item.setAttribute('data-bs-toggle', 'tooltip');
+                    item.setAttribute('data-bs-placement', 'right');
+                    item.setAttribute('title', item.textContent.trim());
+                    new bootstrap.Tooltip(item);
+                } else {
+                    item.removeAttribute('data-bs-toggle');
+                    item.removeAttribute('title');
+                    const tooltip = bootstrap.Tooltip.getInstance(item);
+                    if (tooltip) tooltip.dispose();
+                }
+            });
+        }
+        updateSidebarTooltips();
+        
+        // Add event listeners
+        if (menuToggle) menuToggle.addEventListener('click', toggleSidebar);
+        if (sidebarToggle) sidebarToggle.addEventListener('click', toggleSidebar);
+        
+        // Dark Mode Toggle
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        if (darkModeToggle) {
+            // Restore dark mode preference
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.documentElement.setAttribute('data-bs-theme', 'dark');
+                darkModeToggle.checked = true;
+            }
+            
+            darkModeToggle.addEventListener('change', function() {
+                if (this.checked) {
+                    document.documentElement.setAttribute('data-bs-theme', 'dark');
+                    localStorage.setItem('darkMode', 'true');
+                } else {
+                    document.documentElement.setAttribute('data-bs-theme', 'light');
+                    localStorage.setItem('darkMode', 'false');
+                }
+            });
+        }
+        
+        // Error handling
+        window.addEventListener('error', (event) => {
+            console.error('Application error:', event.error);
+            document.getElementById('error-boundary').style.display = 'block';
         });
     });
     </script>
 
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
-{% block scripts %}{% endblock %}
+    {% block scripts %}{% endblock %}
 </body>
 </html>

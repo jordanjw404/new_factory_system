@@ -2,33 +2,18 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-<div class="container mt-4">
-  <h2>Create New Order</h2>
-  <form method="post" class="card p-4 shadow-sm">
+<div class="container mt-4" style="max-width: 700px;">
+  <h2 class="mb-4">
+    {% if edit_mode %}
+      ✏️ Edit Order
+    {% else %}
+      ➕ Create New Order
+    {% endif %}
+  </h2>
+
+  <form method="post" class="card p-4 shadow-sm border">
     {% csrf_token %}
-    {% for field in form %}
-      {% if field.name != "is_collection" %}
-        <div class="form-floating mb-3">
-          {{ field }}
-          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-          {% if field.errors %}
-            <div class="text-danger small">{{ field.errors|join:", " }}</div>
-          {% endif %}
-        </div>
-      {% endif %}
-    {% endfor %}
-
-    <div class="form-check mb-3">
-      {{ form.is_collection }}
-      <label class="form-check-label" for="{{ form.is_collection.id_for_label }}">
-        {{ form.is_collection.label }}
-      </label>
-      {% if form.is_collection.errors %}
-        <div class="text-danger small">{{ form.is_collection.errors|join:", " }}</div>
-      {% endif %}
-    </div>
-
-    <button type="submit" class="btn btn-success w-100 mt-3">Save Order</button>
+    {% crispy form %}
   </form>
 
   <a href="{% url 'orders:order_list' %}" class="btn btn-secondary mt-3">← Back to Orders</a>

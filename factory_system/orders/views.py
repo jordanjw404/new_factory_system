@@ -33,10 +33,12 @@ def order_create(request):
             order = form.save(commit=False)
             order.created_by = request.user
             order.save()
+            order.maybe_create_production_stage()  # ✅ Automatically create production stage
             return redirect("orders:order_list")
     else:
         form = OrderForm()
     return render(request, "orders/order_form.html", {"form": form})
+
 
 @login_required
 def order_detail_list(request):
@@ -80,11 +82,13 @@ def order_edit(request, pk):
     if request.method == "POST":
         form = OrderForm(request.POST, instance=order)
         if form.is_valid():
-            form.save()
+            order = form.save()
+            order.maybe_create_production_stage()  # ✅ In case send_to_production is ticked now
             return redirect('orders:order_list')
     else:
         form = OrderForm(instance=order)
     return render(request, 'orders/order_form.html', {"form": form, "edit_mode": True})
+
 
 
 @login_required

@@ -1,165 +1,103 @@
+# production/views.py
+from datetime import timedelta, datetime
+import csv
+import json
+import pandas as pd
+from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render, get_object_or_404, redirect
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
+from django.utils.timezone import now
+
 from .models import ProductionStage
 from .forms import ProductionStageForm
-from orders.models import Order
-from datetime import timedelta, datetime
-from django.utils.timezone import now
-import json
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 from .filters import ProductionStageFilter
-import csv
-from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse, HttpResponseBadRequest
-from datetime import datetime
-import pandas as pd
-# --- Helper function ---
-def subtract_working_days(from_date, working_days):
-    current_date = from_date
-    while working_days > 0:
-        current_date -= datetime.timedelta(days=1)
-        if current_date.weekday() < 5:  # Monday-Friday
-            working_days -= 1
-    return current_date
+from .utils import update_stage_status
+from orders.models import Order
+
+
+def get_badge_color(status):
+    return {
+        'NOT_STARTED': 'secondary',
+        'IN_PROGRESS': 'warning',
+        'STUCK': 'danger',
+        'ON_HOLD': 'dark',
+        'COMPLETED': 'success',
+        'READY': 'info',
+        'CONFIRMATION': 'primary',
+        'NO_PAPERWORK': 'danger',
+    }.get(status, 'secondary')
 
 
 @login_required
 def production_detail(request, pk):
     stage = get_object_or_404(ProductionStage, pk=pk)
-    return render(request, 'production/production_detail.html', {'stage': stage})
+    context = {
+        'stage': stage,
+        'badge_colors': {f"{field}_status": get_badge_color(getattr(stage, f"{field}_status"))
+                         for field in ['sales', 'programming', 'nest', 'edge', 'prep', 'build', 'fittings', 'wrapping', 'quality']}
+    }
+    return render(request, 'production/production_detail.html', context)
 
-from .templatetags.dict_extras import get_item  # Import if needed
 
 @login_required
 def production_list(request):
     stages = ProductionStage.objects.select_related('order', 'order__customer')
-    badge_colors = {}
-    for stage in stages:
-        badge_colors[stage.id] = {
-            'sales': get_badge_color(stage.sales_status),
-            'programming': get_badge_color(stage.programming_status),
-            'nest': get_badge_color(stage.nest_status),
-            'edge': get_badge_color(stage.edge_status),
-            'prep': get_badge_color(stage.prep_status),
-            'build': get_badge_color(stage.build_status),
-            'fittings': get_badge_color(stage.fittings_status),
-            'wrapping': get_badge_color(stage.wrapping_status),
-            'quality': get_badge_color(stage.quality_status),
-        }
+    status_fields = ['sales', 'programming', 'nest', 'edge', 'prep', 'build', 'fittings', 'wrapping', 'quality']
+    badge_colors = {
+        stage.id: {field: get_badge_color(getattr(stage, f"{field}_status")) for field in status_fields}
+        for stage in stages
+    }
     return render(request, 'production/production_list.html', {
         'stages': stages,
         'badge_colors': badge_colors,
-        'status_fields': ['sales', 'programming', 'nest', 'edge', 'prep', 'build', 'fittings', 'wrapping', 'quality'],
+        'status_fields': status_fields,
     })
-
 
 
 @login_required
 def production_edit(request, pk):
     stage = get_object_or_404(ProductionStage, pk=pk)
-    orders = Order.objects.select_related('customer')  # <-- Add this
-    if request.method == 'POST':
-        form = ProductionStageForm(request.POST, instance=stage)
-        if form.is_valid():
-            form.save()
-            return redirect('production:production_detail', pk=pk)
-    else:
-        form = ProductionStageForm(instance=stage)
-
-    return render(request, 'production/production_form.html', {
-        'form': form,
-        'editing': True,
-        'stage': stage,
-        'orders': orders,   # <-- Pass orders here too
-    })
+    form = ProductionStageForm(request.POST or None, instance=stage)
+    if form.is_valid():
+        form.save()
+        return redirect('production:production_detail', pk=pk)
+    return render(request, 'production/production_form.html', {'form': form, 'editing': True, 'stage': stage})
 
 
-
-
+@login_required
 def production_create(request):
-    orders = Order.objects.select_related('customer')
-    if request.method == 'POST':
-        form = ProductionStageForm(request.POST)
-        if form.is_valid():
-            production_stage = form.save(commit=False)
+    form = ProductionStageForm(request.POST or None)
+    if form.is_valid():
+        production_stage = form.save(commit=False)
+        delivery_date = production_stage.order.delivery_date
 
-            # Calculate target dates based on the delivery date
-            if production_stage.order.delivery_date:
-                delivery_date = production_stage.order.delivery_date
+        if delivery_date:
+            def weekday_back(d, days):
+                d -= timedelta(days=days)
+                while d.weekday() > 4:
+                    d -= timedelta(days=1)
+                return d
 
-                # Helper to skip weekends
-                def adjust_to_weekday(date):
-                    while date.weekday() in (5, 6):  # Saturday = 5, Sunday = 6
-                        date -= timedelta(days=1)
-                    return date
+            stage_offsets = [14, 9, 8, 7, 6, 5, 4, 3, 2]  # sales to quality
+            target_fields = ['sales', 'programming', 'nest', 'edge', 'prep', 'build', 'fittings', 'wrapping', 'quality']
 
-                production_stage.sales_target_date = adjust_to_weekday(delivery_date - timedelta(days=14))
-                production_stage.programming_target_date = adjust_to_weekday(delivery_date - timedelta(days=9))
-                production_stage.nest_target_date = adjust_to_weekday(delivery_date - timedelta(days=8))
-                production_stage.edge_target_date = adjust_to_weekday(delivery_date - timedelta(days=7))
-                production_stage.prep_target_date = adjust_to_weekday(delivery_date - timedelta(days=6))
-                production_stage.build_target_date = adjust_to_weekday(delivery_date - timedelta(days=5))
-                production_stage.fittings_target_date = adjust_to_weekday(delivery_date - timedelta(days=4))
-                production_stage.wrapping_target_date = adjust_to_weekday(delivery_date - timedelta(days=3))
-                production_stage.quality_target_date = adjust_to_weekday(delivery_date - timedelta(days=2))
+            for field, offset in zip(target_fields, stage_offsets):
+                setattr(production_stage, f"{field}_target_date", weekday_back(delivery_date, offset))
 
-                # Estimate sheets + cabs
-                production_stage.estimated_nest_sheets = (
-                    production_stage.order.cabs * 0.55 +
-                    production_stage.order.robes * 0.86 +
-                    production_stage.order.panels * 0.1
-                )
-                production_stage.estimated_build_cabs = (
-                    production_stage.order.cabs + production_stage.order.robes
-                )
+            production_stage.estimated_nest_sheets = (
+                production_stage.order.cabs * 0.55 +
+                production_stage.order.robes * 0.86 +
+                production_stage.order.panels * 0.1
+            )
+            production_stage.estimated_build_cabs = production_stage.order.cabs + production_stage.order.robes
 
-            production_stage.save()
-            return redirect('production:production_list')
-    else:
-        form = ProductionStageForm()
+        production_stage.save()
+        return redirect('production:production_list')
 
-    return render(request, 'production/production_form.html', {'form': form, 'orders': orders})
+    return render(request, 'production/production_form.html', {'form': form})
 
-def get_badge_color(status):
-    if status == 'NOT_STARTED':
-        return 'secondary'
-    elif status == 'IN_PROGRESS':
-        return 'warning'
-    elif status == 'STUCK':
-        return 'danger'
-    elif status == 'ON_HOLD':
-        return 'dark'
-    elif status == 'CONFIRMATION':
-        return 'primary'
-    elif status == 'COMPLETED':
-        return 'success'
-    elif status == 'NO_PAPERWORK':
-        return 'danger'
-    elif status == 'Ready':
-        return 'pink' 
-    else:
-        return 'secondary'
-
-def production_detail(request, pk):
-    stage = get_object_or_404(ProductionStage, pk=pk)
-
-    context = {
-        'stage': stage,
-        'badge_colors': {
-            'sales_status': get_badge_color(stage.sales_status),
-            'programming_status': get_badge_color(stage.programming_status),
-            'nest_status': get_badge_color(stage.nest_status),
-            'edge_status': get_badge_color(stage.edge_status),
-            'prep_status': get_badge_color(stage.prep_status),
-            'build_status': get_badge_color(stage.build_status),
-            'fittings_status': get_badge_color(stage.fittings_status),
-            'wrapping_status': get_badge_color(stage.wrapping_status),
-            'quality_status': get_badge_color(stage.quality_status),
-        }
-    }
-    return render(request, 'production/production_detail.html', context)
 
 @login_required
 def production_delete(request, pk):
@@ -170,6 +108,88 @@ def production_delete(request, pk):
     return redirect('production:production_detail', pk=pk)
 
 
+@login_required
+def production_export(request):
+    stages = ProductionStage.objects.select_related('order', 'order__customer')
+    data = [{
+        'Order Ref': s.order.reference,
+        'Customer': s.order.customer.name,
+        'Sales Status': s.get_sales_status_display(),
+        'Programming Status': s.get_programming_status_display(),
+        'Nest Status': s.get_nest_status_display(),
+        'Edge Status': s.get_edge_status_display(),
+        'Prep Status': s.get_prep_status_display(),
+        'Build Status': s.get_build_status_display(),
+        'Fittings Status': s.get_fittings_status_display(),
+        'Wrapping Status': s.get_wrapping_status_display(),
+        'Quality Status': s.get_quality_status_display(),
+    } for s in stages]
+    df = pd.DataFrame(data)
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=production_list.xlsx'
+    df.to_excel(response, index=False)
+    return response
+
+
+@login_required
+def production_detail_list(request):
+    f = ProductionStageFilter(request.GET, queryset=ProductionStage.objects.select_related('order', 'order__customer'))
+    status_fields = ['sales', 'programming', 'nest', 'edge', 'prep', 'build', 'fittings', 'wrapping', 'quality']
+    badge_colors = {
+        stage.id: {field: get_badge_color(getattr(stage, f"{field}_status")) for field in status_fields}
+        for stage in f.qs
+    }
+    return render(request, 'production/production_detail_list.html', {
+        'filter': f,
+        'stages': f.qs,
+        'status_fields': status_fields,
+        'badge_colors': badge_colors,
+    })
+
+
+@login_required
+def production_detail_export(request):
+    f = ProductionStageFilter(request.GET, queryset=ProductionStage.objects.select_related('order', 'order__customer'))
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="detailed_production_list.csv"'
+    writer = csv.writer(response)
+
+    headers = [
+        "Order Ref", "Customer"
+    ] + [f"{stage.title()} Status" for stage in ['sales', 'programming', 'nest', 'edge', 'prep', 'build', 'fittings', 'wrapping', 'quality']] + \
+        [f"{stage.title()} Target Date" for stage in ['sales', 'programming', 'nest', 'edge', 'prep', 'build', 'fittings', 'wrapping', 'quality']]
+
+    writer.writerow(headers)
+
+    for s in f.qs:
+        row = [s.order.reference, s.order.customer.name]
+        for stage in ['sales', 'programming', 'nest', 'edge', 'prep', 'build', 'fittings', 'wrapping', 'quality']:
+            row.append(getattr(s, f"get_{stage}_status_display")())
+        for stage in ['sales', 'programming', 'nest', 'edge', 'prep', 'build', 'fittings', 'wrapping', 'quality']:
+            row.append(getattr(s, f"{stage}_target_date"))
+        writer.writerow(row)
+
+    return response
+
+
+@csrf_exempt
+@require_POST
+def update_target_date(request, stage_id):
+    field = request.POST.get('field')
+    value = request.POST.get('value')
+    stage = get_object_or_404(ProductionStage, pk=stage_id)
+
+    if not field.endswith('_target_date') or not hasattr(stage, field):
+        return HttpResponseBadRequest("Invalid field")
+
+    try:
+        setattr(stage, field, datetime.strptime(value, "%Y-%m-%d").date())
+        stage.save()
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return HttpResponseBadRequest(f"Failed to save: {str(e)}")
+
+
 @csrf_exempt
 @login_required
 def production_update_status(request, pk):
@@ -178,157 +198,27 @@ def production_update_status(request, pk):
             stage = get_object_or_404(ProductionStage, pk=pk)
             data = json.loads(request.body)
 
-            status_field = data.get('status_field')
-            new_value = data.get('new_value')
+            status_field = data.get('status_field')  # e.g., 'sales_status'
+            new_value = data.get('new_value')        # e.g., 'COMPLETED'
 
-            if status_field and hasattr(stage, status_field):
-                setattr(stage, status_field, new_value)
-                stage.save()
-                return JsonResponse({'success': True})
+            if not status_field or not hasattr(stage, status_field):
+                return JsonResponse({'success': False, 'error': 'Invalid field'}, status=400)
+
+            # Extract stage name: 'sales_status' -> 'sales'
+            if status_field.endswith('_status'):
+                stage_name = status_field.replace('_status', '')
+                update_stage_status(stage, stage_name, new_value)
+
+                return JsonResponse({
+                    'success': True,
+                    'stage_id': stage.id,
+                    'status_field': status_field,
+                    'new_value': new_value
+                })
             else:
-                return JsonResponse({'success': False, 'error': 'Invalid field'})
+                return JsonResponse({'success': False, 'error': 'Invalid field name'}, status=400)
+
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
-    return JsonResponse({'success': False, 'error': 'Invalid request method'})
-
-@login_required
-def production_export(request):
-    stages = ProductionStage.objects.select_related('order', 'order__customer')
-
-    # Prepare data for export
-    data = []
-    for stage in stages:
-        data.append({
-            'Order Ref': stage.order.reference,
-            'Customer': stage.order.customer.name,
-            'Sales Status': stage.get_sales_status_display(),
-            'Programming Status': stage.get_programming_status_display(),
-            'Nest Status': stage.get_nest_status_display(),
-            'Edge Status': stage.get_edge_status_display(),
-            'Prep Status': stage.get_prep_status_display(),
-            'Build Status': stage.get_build_status_display(),
-            'Fittings Status': stage.get_fittings_status_display(),
-            'Wrapping Status': stage.get_wrapping_status_display(),
-            'Quality Status': stage.get_quality_status_display(),
-        })
-
-    df = pd.DataFrame(data)
-
-    # Create Excel file
-    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = 'attachment; filename=production_list.xlsx'
-    df.to_excel(response, index=False)
-    return response
-
-@login_required
-def production_detail_list(request):
-    stages = ProductionStage.objects.select_related('order', 'order__customer')
-    filter = ProductionStageFilter(request.GET, queryset=stages)
-    filtered_stages = filter.qs
-
-    status_fields = ['sales', 'programming', 'nest', 'edge', 'prep', 'build', 'fittings', 'wrapping', 'quality']
-
-    badge_colors = {}
-    for stage in filtered_stages:
-        badge_colors[stage.id] = {
-            'sales': get_badge_color(stage.sales_status),
-            'programming': get_badge_color(stage.programming_status),
-            'nest': get_badge_color(stage.nest_status),
-            'edge': get_badge_color(stage.edge_status),
-            'prep': get_badge_color(stage.prep_status),
-            'build': get_badge_color(stage.build_status),
-            'fittings': get_badge_color(stage.fittings_status),
-            'wrapping': get_badge_color(stage.wrapping_status),
-            'quality': get_badge_color(stage.quality_status),
-        }
-
-    return render(request, 'production/production_detail_list.html', {
-        'filter': filter,
-        'stages': filtered_stages,
-        'status_fields': status_fields,
-        'badge_colors': badge_colors,
-    })
-
-
-@login_required
-def production_detail_export(request):
-    queryset = ProductionStage.objects.select_related('order', 'order__customer')
-    f = ProductionStageFilter(request.GET, queryset=queryset)
-    stages = f.qs
-
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="detailed_production_list.csv"'
-
-    writer = csv.writer(response)
-    writer.writerow([
-        "Order Ref", "Customer",
-
-        "Sales Status", "Sales Target Date",
-        "Programming Status", "Programming Target Date",
-        "Nest Status", "Nest Target Date",
-        "Edge Status", "Edge Target Date",
-        "Prep Status", "Prep Target Date",
-        "Build Status", "Build Target Date",
-        "Fittings Status", "Fittings Target Date",
-        "Wrapping Status", "Wrapping Target Date",
-        "Quality Status", "Quality Target Date"
-    ])
-
-    for stage in stages:
-        writer.writerow([
-            stage.order.reference,
-            stage.order.customer.name,
-
-            stage.get_sales_status_display(),
-            stage.sales_target_date,
-
-            stage.get_programming_status_display(),
-            stage.programming_target_date,
-
-            stage.get_nest_status_display(),
-            stage.nest_target_date,
-
-            stage.get_edge_status_display(),
-            stage.edge_target_date,
-
-            stage.get_prep_status_display(),
-            stage.prep_target_date,
-
-            stage.get_build_status_display(),
-            stage.build_target_date,
-
-            stage.get_fittings_status_display(),
-            stage.fittings_target_date,
-
-            stage.get_wrapping_status_display(),
-            stage.wrapping_target_date,
-
-            stage.get_quality_status_display(),
-            stage.quality_target_date,
-        ])
-
-    return response
-
-@csrf_exempt
-def update_target_date(request, stage_id):
-    if request.method == 'POST':
-        field = request.POST.get('field')
-        value = request.POST.get('value')
-
-        if not field or not value:
-            return HttpResponseBadRequest("Missing field or value")
-
-        stage = get_object_or_404(ProductionStage, pk=stage_id)
-
-        if not field.endswith('_target_date') or not hasattr(stage, field):
-            return HttpResponseBadRequest("Invalid field")
-
-        try:
-            setattr(stage, field, datetime.strptime(value, "%Y-%m-%d").date())
-            stage.save()
-            return JsonResponse({'success': True})
-        except Exception as e:
-            return HttpResponseBadRequest(f"Failed to save: {str(e)}")
-
-    return HttpResponseBadRequest("Invalid request method")
+    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)

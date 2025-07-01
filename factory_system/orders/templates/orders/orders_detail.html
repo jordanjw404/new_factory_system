@@ -2,28 +2,69 @@
 {% block content %}
 
 <div class="container mt-4">
-  <h2>Order: {{ order.name }} ({{ order.reference }})</h2>
+  <h2>📦 Order: {{ order.name }} <small class="text-muted">({{ order.reference }})</small></h2>
 
-  <div class="card mt-3">
+  <div class="card mt-3 shadow-sm border">
     <div class="card-body">
-      <p><strong>Customer:</strong> {{ order.customer.name }}</p>
-      <p><strong>Sales Owner:</strong> {{ order.owner }}</p>
-      <p><strong>Order Type:</strong> {{ order.get_order_type_display }}</p>
-      <p><strong>Status:</strong> <span class="badge bg-info">{{ order.get_status_display }}</span></p>
-      <p><strong>Delivery Date:</strong> {{ order.delivery_date|date:"d M Y" }}</p>
-      <p><strong>Collection:</strong> {% if order.is_collection %}✅ Yes{% else %}❌ No{% endif %}</p>
+      <div class="row">
+        <div class="col-md-6">
+          <p><strong>👤 Customer:</strong> {{ order.customer.name }}</p>
+          <p><strong>🧑‍💼 Sales Owner:</strong> {{ order.owner }}</p>
+          <p><strong>📂 Type:</strong> {{ order.get_order_type_display }}</p>
+          <p><strong>🚚 Delivery:</strong> {{ order.delivery_date|date:"d M Y" }}</p>
+          <p><strong>📦 Collection:</strong> {% if order.is_collection %}✅ Yes{% else %}❌ No{% endif %}</p>
+        </div>
+        <div class="col-md-6">
+          <p>
+            <strong>📈 Status:</strong>
+            {% if order.status == 'PENDING' %}<span class="badge bg-warning text-dark">Pending</span>
+            {% elif order.status == 'IN_PRODUCTION' %}<span class="badge bg-primary">In Production</span>
+            {% elif order.status == 'COMPLETE' %}<span class="badge bg-success">Complete</span>
+            {% elif order.status == 'DELIVERED' %}<span class="badge bg-info text-dark">Delivered</span>
+            {% elif order.status == 'CANCELLED' %}<span class="badge bg-danger">Cancelled</span>
+            {% else %}<span class="badge bg-secondary">{{ order.get_status_display }}</span>{% endif %}
+          </p>
+
+          {% if order.production_stage %}
+            <p>
+              <strong>🏭 Production Stage:</strong>
+              <a href="{% url 'production:production_detail' order.production_stage.id %}">
+                {% with stage_name=order.production_stage.get_current_stage_name %}
+                  {% if stage_name == "Complete" %}
+                    <span class="badge bg-success">✅ {{ stage_name }}</span>
+                  {% else %}
+                    <span class="badge bg-info text-dark">{{ stage_name }}</span>
+                  {% endif %}
+                {% endwith %}
+              </a>
+            </p>
+          {% else %}
+            <p><strong>🏭 Production Stage:</strong> <span class="text-muted">Not yet in production</span></p>
+          {% endif %}
+        </div>
+      </div>
+
       <hr>
-      <p><strong>Cabinets:</strong> {{ order.cabs }}</p>
-      <p><strong>Robes:</strong> {{ order.robes }}</p>
-      <p><strong>Panels:</strong> {{ order.panels }}</p>
+
+      <div class="row">
+        <div class="col-md-4"><strong>🪚 Cabinets:</strong> {{ order.cabs }}</div>
+        <div class="col-md-4"><strong>🚪 Robes:</strong> {{ order.robes }}</div>
+        <div class="col-md-4"><strong>🧱 Panels:</strong> {{ order.panels }}</div>
+      </div>
+
       <hr>
-      <p><strong>Created By:</strong> {{ order.created_by }}</p>
-      <p><strong>Created At:</strong> {{ order.created_at|date:"d M Y, H:i" }}</p>
-      <p><strong>Last Updated:</strong> {{ order.updated_at|date:"d M Y, H:i" }}</p>
+
+      <div class="row">
+        <div class="col-md-6"><strong>🧑‍💻 Created By:</strong> {{ order.created_by }}</div>
+        <div class="col-md-6"><strong>📅 Created At:</strong> {{ order.created_at|date:"d M Y, H:i" }}</div>
+      </div>
+      <div class="row mt-1">
+        <div class="col-md-6"><strong>♻️ Last Updated:</strong> {{ order.updated_at|date:"d M Y, H:i" }}</div>
+      </div>
     </div>
   </div>
 
-  <a href="{% url 'orders:order_list' %}" class="btn btn-secondary mt-3">← Back to Orders</a>
+  <a href="{% url 'orders:order_list' %}" class="btn btn-secondary mt-4">← Back to Orders</a>
 </div>
 
 {% endblock %}
