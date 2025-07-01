@@ -1,0 +1,105 @@
+{% extends "core/base.html" %}
+{% load widget_tweaks %}
+{% block content %}
+
+<div class="container mt-4">
+  <h2>Customer List</h2>
+
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div class="btn-group">
+      <a href="{% url 'customers:customer_list' %}" class="btn btn-outline-secondary btn-sm {% if not request.GET.status %}active{% endif %}">All</a>
+      <a href="?status=active{% if request.GET.name %}&name={{ request.GET.name }}{% endif %}" class="btn btn-outline-success btn-sm {% if request.GET.status == 'active' %}active{% endif %}">Active</a>
+      <a href="?status=inactive{% if request.GET.name %}&name={{ request.GET.name }}{% endif %}" class="btn btn-outline-danger btn-sm {% if request.GET.status == 'inactive' %}active{% endif %}">Inactive</a>
+    </div>
+  
+    <a href="{% url 'customers:customer_create' %}" class="btn btn-outline-success btn-sm">➕ New Customer</a>
+  </div>
+  
+
+  <table id="customerTable" class="table table-hover table-striped table-bordered table-sm align-middle text-center shadow-sm">
+    <thead class="table-dark">
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for customer in customers %}
+      <tr>
+        <td>{{ customer.id }}</td>
+        <td>{{ customer.name }}</td>
+        <td>{{ customer.email }}</td>
+        <td>{{ customer.phone }}</td>
+        <td>
+          <div class="btn-group btn-group-sm" role="group">
+            <a href="{% url 'customers:customer_detail' customer.id %}" class="btn btn-outline-primary" title="View Customer">
+              <i class="bi bi-eye"></i>
+            </a>
+            <a href="{% url 'customers:customer_edit' customer.id %}" class="btn btn-outline-warning" title="Edit Customer">
+              <i class="bi bi-pencil-square"></i>
+            </a>
+            <button type="button" class="btn btn-outline-danger" title="Delete" data-bs-toggle="modal" data-bs-target="#deleteModal{{ customer.id }}">
+              <i class="bi bi-trash3"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Delete Modals -->
+  {% for customer in customers %}
+  <div class="modal fade" id="deleteModal{{ customer.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ customer.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-danger">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title" id="deleteModalLabel{{ customer.id }}">Delete Customer</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Are you sure you want to delete <strong>{{ customer.name }}</strong>?
+        </div>
+        <div class="modal-footer">
+          <form method="post" action="{% url 'customers:customer_delete' customer.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger btn-sm">Yes, Delete</button>
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+  $('#customerTable').DataTable({
+    paging: true,
+    pageLength: 25,
+    lengthChange: true,
+    searching: true,
+    ordering: true,
+    info: true,
+    autoWidth: false,
+    responsive: true,
+    language: {
+      searchPlaceholder: "Quick Search...",
+      search: "",
+      lengthMenu: "_MENU_ entries per page",
+      paginate: {
+        previous: "<",
+        next: ">"
+      }
+    }
+  });
+});
+</script>
+{% endblock %}
+
+{% endblock %}

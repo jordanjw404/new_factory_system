@@ -1,0 +1,122 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>{{ customer.name }}</h2>
+
+  <div class="card">
+    <div class="card-body">
+      <p><strong>Contact Name:</strong> {{ customer.contact_name }}</p>
+      <p><strong>Email:</strong> {{ customer.email }}</p>
+      <p><strong>Phone:</strong> {{ customer.phone }}</p>
+      <p><strong>Mobile:</strong> {{ customer.mobile }}</p>
+      <p><strong>Address:</strong> {{ customer.address_1 }}, {{ customer.address_2 }}, {{ customer.city }}, {{ customer.postcode }}</p>
+      <p><strong>Status:</strong>
+        {% if customer.is_active %}
+          ✅ Active
+        {% else %}
+          ❌ Inactive
+        {% endif %}
+      </p>
+      <p><strong>Notes:</strong> {{ customer.notes }}</p>
+      <p><strong>Created By:</strong> {{ customer.created_by }}</p>
+      <p><strong>Created At:</strong> {{ customer.created_at|date:"d M Y, H:i" }}</p>
+      <p><strong>Updated At:</strong> {{ customer.updated_at|date:"d M Y, H:i" }}</p>
+
+      <div class="mt-4 text-end">
+        <div class="btn-group btn-group-sm">
+          <a href="{% url 'customers:customer_list' %}" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left"></i> Back
+          </a>
+          <a href="{% url 'customers:customer_edit' customer.pk %}" class="btn btn-outline-warning">
+            <i class="bi bi-pencil-square"></i> Edit
+          </a>
+          <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+            <i class="bi bi-trash"></i> Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Attachments Section -->
+  <hr class="my-4">
+  <h4>Attachments</h4>
+
+  <form method="post" enctype="multipart/form-data" class="d-flex flex-wrap align-items-center gap-2 mb-3">
+    {% csrf_token %}
+    <div class="form-group mb-0">
+      {{ doc_form.file }}
+    </div>
+    <div class="form-group mb-0">
+      {{ doc_form.description }}
+    </div>
+    <button type="submit" class="btn btn-outline-primary btn-sm">
+      <i class="bi bi-upload"></i> Upload File
+    </button>
+  </form>
+
+  {% if documents %}
+  <ul class="list-group">
+    {% for doc in documents %}
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <div>
+          <a href="{{ doc.file.url }}" target="_blank">{{ doc.file.name|cut:'customer_documents/' }}</a><br>
+          <small class="text-muted">{{ doc.description|default:"No description" }} — {{ doc.uploaded_at|date:"d M Y, H:i" }}</small>
+        </div>
+        <!-- Delete Button (Triggers Modal) -->
+        <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteDocModal{{ doc.pk }}">
+          <i class="bi bi-trash"></i>
+        </button>
+      </li>
+
+      <!-- Delete Modal -->
+      <div class="modal fade" id="deleteDocModal{{ doc.pk }}" tabindex="-1" aria-labelledby="deleteDocModalLabel{{ doc.pk }}" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+              <h5 class="modal-title" id="deleteDocModalLabel{{ doc.pk }}">Delete Attachment</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              Are you sure you want to delete <strong>{{ doc.file.name|cut:'customer_documents/' }}</strong>?
+            </div>
+            <div class="modal-footer">
+              <form method="post" action="{% url 'customers:customer_document_delete' customer.pk doc.pk %}">
+                {% csrf_token %}
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-danger btn-sm">Yes, Delete</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p class="text-muted">No documents uploaded yet.</p>
+{% endif %}
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to delete <strong>{{ customer.name }}</strong>?
+      </div>
+      <div class="modal-footer">
+        <form method="post" action="{% url 'customers:customer_delete' customer.pk %}">
+          {% csrf_token %}
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger">Yes, Delete</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

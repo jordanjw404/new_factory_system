@@ -1,0 +1,89 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load widget_tweaks dict_extras %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>Detailed Production List</h2>
+</div>
+
+<p class="text-muted small ms-2">
+  Showing {{ stages|length }} result{{ stages|length|pluralize }}.
+</p>
+
+<div class="table-responsive">
+  <table id="productionDetailTable" class="table table-bordered table-sm text-center align-middle w-100">
+    <thead class="table-dark">
+      <tr>
+        <th>Order Ref</th>
+        <th>Customer</th>
+        {% for field in status_fields %}
+          <th>{{ field|capfirst }}<br>Status</th>
+          <th>{{ field|capfirst }}<br>Target</th>
+          <th>{{ field|capfirst }}<br>Completed</th>
+        {% endfor %}
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for stage in stages %}
+      <tr>
+        <td>{{ stage.order.reference }}</td>
+        <td>{{ stage.order.customer.name }}</td>
+
+        {% for field in status_fields %}
+        <td>
+          <div class="dropdown" data-stage-id="{{ stage.id }}">
+            <a class="badge bg-{{ badge_colors|get_item:stage.id|get_item:field|default:'secondary' }} dropdown-toggle text-decoration-none"
+               href="#" role="button"
+               id="dropdownMenu{{ field }}{{ stage.id }}"
+               data-bs-toggle="dropdown" aria-expanded="false">
+              {% with full_field=field|add:"_status" %}
+                {{ stage|get_status_display:full_field|default:"-" }}
+              {% endwith %}
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="dropdownMenu{{ field }}{{ stage.id }}">
+              <li><a class="dropdown-item" href="#" data-action="update-status" data-stage-id="{{ stage.id }}" data-field="{{ field }}_status" data-value="NOT_STARTED">Not Started</a></li>
+              <li><a class="dropdown-item" href="#" data-action="update-status" data-stage-id="{{ stage.id }}" data-field="{{ field }}_status" data-value="IN_PROGRESS">In Progress</a></li>
+              <li><a class="dropdown-item" href="#" data-action="update-status" data-stage-id="{{ stage.id }}" data-field="{{ field }}_status" data-value="STUCK">Stuck</a></li>
+              <li><a class="dropdown-item" href="#" data-action="update-status" data-stage-id="{{ stage.id }}" data-field="{{ field }}_status" data-value="ON_HOLD">On Hold</a></li>
+              <li><a class="dropdown-item" href="#" data-action="update-status" data-stage-id="{{ stage.id }}" data-field="{{ field }}_status" data-value="COMPLETED">Completed</a></li>
+              <li><a class="dropdown-item" href="#" data-action="update-status" data-stage-id="{{ stage.id }}" data-field="{{ field }}_status" data-value="READY">Ready</a></li>
+            </ul>
+          </div>
+        </td>
+        <td>{{ stage|get_target_date:field|date:"Y-m-d" }}</td>
+        <td>{{ stage|get_completed_date:field|date:"Y-m-d" }}</td>
+        {% endfor %}
+
+        <td>
+          <div class="btn-group btn-group-sm">
+            <a href="{% url 'production:production_detail' stage.id %}" class="btn btn-outline-primary" title="View"><i class="bi bi-eye"></i></a>
+            <a href="{% url 'production:production_edit' stage.id %}" class="btn btn-outline-warning" title="Edit"><i class="bi bi-pencil-square"></i></a>
+            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ stage.id }}"><i class="bi bi-trash3"></i></button>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="100%">No production stages found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="d-flex justify-content-end mt-3">
+  <a href="{% url 'production:production_detail_export' %}?{{ request.GET.urlencode }}" class="btn btn-sm btn-success">⬇️ Export to CSV</a>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<!-- Load jQuery first -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Then load DataTables -->
+<script src="https://cdn.datatables.net/v/dt/dt-1.11.5/datatables.min.js"></script>
+
+<!-- Then your custom script -->
+<script src="{% static 'production/js/production.js' %}"></script>
+{% endblock %}

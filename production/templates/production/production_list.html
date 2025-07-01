@@ -1,0 +1,134 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load widget_tweaks dict_extras %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>Production List</h2>
+</div>
+
+<!-- Filters -->
+<button class="btn btn-sm btn-outline-dark mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#productionFilters">
+  🔍 Show Filters
+</button>
+<div class="collapse p-3 border rounded bg-light" id="productionFilters">
+  <form method="get" class="row gx-2 gy-2 mb-3 align-items-end">
+    <div class="col-md-3">{{ filter.form.sales_status.label_tag }} {{ filter.form.sales_status|add_class:"form-select form-select-sm" }}</div>
+    <div class="col-md-3">{{ filter.form.programming_status.label_tag }} {{ filter.form.programming_status|add_class:"form-select form-select-sm" }}</div>
+    <div class="col-md-3">{{ filter.form.nest_status.label_tag }} {{ filter.form.nest_status|add_class:"form-select form-select-sm" }}</div>
+    <div class="col-md-3">{{ filter.form.build_status.label_tag }} {{ filter.form.build_status|add_class:"form-select form-select-sm" }}</div>
+    <div class="col-md-2 text-end">
+      <button type="submit" class="btn btn-sm btn-primary w-100">Filter</button>
+      <a href="{% url 'production:production_list' %}" class="btn btn-sm btn-outline-secondary w-100 mt-2">Clear</a>
+    </div>
+  </form>
+</div>
+
+<p class="text-muted small ms-2">
+  Showing {{ stages|length }} result{{ stages|length|pluralize }}.
+</p>
+
+<!-- 📋 Production Table -->
+<div class="container-fluid">
+  <table id="productionTable" class="table table-hover table-striped table-bordered table-sm align-middle text-center w-100">
+    <thead class="table-dark">
+      <tr>
+        <th>Order Ref</th>
+        <th>Customer</th>
+        <th>Sales</th>
+        <th>Programming</th>
+        <th>Nest</th>
+        <th>Edge</th>
+        <th>Prep</th>
+        <th>Build</th>
+        <th>Fittings</th>
+        <th>Wrapping</th>
+        <th>Quality</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for stage in stages %}
+      <tr>
+        <td>{{ stage.order.reference }}</td>
+        <td>{{ stage.order.customer.name }}</td>
+
+{% for field in status_fields %}
+  <td>
+    <div class="dropdown" data-stage-id="{{ stage.id }}">
+      <a class="badge bg-{{ badge_colors|get_item:stage.id|get_item:field|default:'secondary' }} dropdown-toggle text-decoration-none"
+         href="#" role="button" id="dropdownMenu{{ field }}{{ stage.id }}"
+" data-bs-toggle="dropdown" aria-expanded="false">
+        {% with full_field=field|add:"_status" %}
+          {{ stage|get_status_display:full_field|default:"-" }}
+        {% endwith %}
+      </a>
+      <ul class="dropdown-menu" aria-labelledby="dropdownMenu{{ field|capfirst }}{{ stage.id }}">
+        <li><a class="dropdown-item" href="#" data-action="update-status" data-stage-id="{{ stage.id }}" data-field="{{ field }}_status" data-value="NOT_STARTED">Not Started</a></li>
+        <li><a class="dropdown-item" href="#" data-action="update-status" data-stage-id="{{ stage.id }}" data-field="{{ field }}_status" data-value="IN_PROGRESS">In Progress</a></li>
+        <li><a class="dropdown-item" href="#" data-action="update-status" data-stage-id="{{ stage.id }}" data-field="{{ field }}_status" data-value="STUCK">Stuck</a></li>
+        <li><a class="dropdown-item" href="#" data-action="update-status" data-stage-id="{{ stage.id }}" data-field="{{ field }}_status" data-value="ON_HOLD">On Hold</a></li>
+        <li><a class="dropdown-item" href="#" data-action="update-status" data-stage-id="{{ stage.id }}" data-field="{{ field }}_status" data-value="COMPLETED">Completed</a></li>
+        <li><a class="dropdown-item" href="#" data-action="update-status" data-stage-id="{{ stage.id }}" data-field="{{ field }}_status" data-value="READY">Ready</a></li>
+      </ul>
+    </div>
+  </td>
+{% endfor %}
+
+
+        <td>
+          <div class="btn-group btn-group-sm">
+            <a href="{% url 'production:production_detail' stage.id %}" class="btn btn-outline-primary" title="View"><i class="bi bi-eye"></i></a>
+            <a href="{% url 'production:production_edit' stage.id %}" class="btn btn-outline-warning" title="Edit"><i class="bi bi-pencil-square"></i></a>
+            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ stage.id }}"><i class="bi bi-trash3"></i></button>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="12">No production stages found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="d-flex justify-content-end align-items-center my-3">
+  <a href="{% url 'production:production_export' %}?{{ request.GET.urlencode }}" class="btn btn-sm btn-success">
+    ⬇️ Export to Excel
+  </a>
+</div>
+
+<!-- Delete Modals -->
+{% for stage in stages %}
+<div class="modal fade" id="deleteModal{{ stage.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ stage.id }}" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-danger">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">Delete Production Stage</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to delete Production Stage for <strong>{{ stage.order.reference }}</strong>?
+      </div>
+      <div class="modal-footer">
+        <form method="post" action="{% url 'production:production_delete' stage.id %}">
+          {% csrf_token %}
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger">Yes, Delete</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block scripts %}
+<!-- Load jQuery first -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Then load DataTables -->
+<script src="https://cdn.datatables.net/v/dt/dt-1.11.5/datatables.min.js"></script>
+
+<!-- Then your custom script -->
+<script src="{% static 'production/js/production.js' %}"></script>
+{% endblock %}

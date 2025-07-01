@@ -1,0 +1,24 @@
+<!-- core/templates/core/includes/footer.html -->
+<footer class="bg-light py-4 border-top">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <!-- Copyright -->
+            <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                <span class="text-muted">
+                    &copy; {{ now|date:"Y" }} Factory System — All rights reserved.
+                </span>
+            </div>
+            
+            <!-- Version and Links -->
+            <div class="col-md-6 text-center text-md-end">
+                <div class="d-flex justify-content-center justify-content-md-end align-items-center">
+                    <span class="badge bg-secondary me-2">v{{ APP_VERSION }}</span>
+                    <div class="vr mx-2"></div>
+                    <a href="#" class="text-decoration-none text-muted small me-3">Privacy Policy</a>
+                    <a href="#" class="text-decoration-none text-muted small me-3">Terms of Service</a>
+                    <a href="#" class="text-decoration-none text-muted small">Contact</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
