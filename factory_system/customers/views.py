@@ -185,7 +185,7 @@ def customer_detail(request, pk):
         'doc_form': form,
     })
 
-#This view handles the deletion of a customer document.
+# This view handles the deletion of a customer document.
 @login_required
 def delete_customer_document(request, customer_pk, doc_pk):
     customer = get_object_or_404(Customer, pk=customer_pk)
