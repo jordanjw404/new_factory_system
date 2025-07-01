@@ -25,18 +25,9 @@ urlpatterns = [
     path('customers/', include('customers.urls')),
     path("orders/", include("orders.urls")),
     path('production/', include(('production.urls', 'production'), namespace='production')),
-<<<<<<< HEAD
-<<<<<<< HEAD
     path("inventory/", include("inventory.urls", namespace="inventory")),
-
-=======
     path('inventory/', include(('inventory.urls', 'inventory'), namespace='inventory')),
->>>>>>> b56bbc1 (Refactor inventory URLs and views; add specific views for cabinets, boards, hardware, and edge banding)
-=======
     path("inventory/", include("inventory.urls", namespace="inventory")),
-
->>>>>>> d92dd45 (Implement inventory list view and template; add slug fields to models for better URL handling)
 ]
-
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
