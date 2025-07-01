@@ -3,6 +3,7 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from customers.models import Customer
 from orders.models import Order
+from production.models import ProductionStage
 
 
 class OrderCreateViewTests(TestCase):
@@ -23,14 +24,17 @@ class OrderCreateViewTests(TestCase):
             "reference": "REF123",
             "delivery_date": "2025-05-01",
             "order_type": "KITCHEN",
-            "status": "PENDING",
+            "priority": "MEDIUM",
+            "status": "NO_PAPERWORK",
             "robes": 3,
             "cabs": 5,
             "panels": 7,
             "owner": self.user.id,
+            "send_to_production": True,
         })
 
         self.assertEqual(response.status_code, 302)  # Redirects after success
         self.assertEqual(Order.objects.count(), 1)
         order = Order.objects.first()
         self.assertEqual(order.name, "Test Order")
+        self.assertTrue(ProductionStage.objects.filter(order=order).exists())
