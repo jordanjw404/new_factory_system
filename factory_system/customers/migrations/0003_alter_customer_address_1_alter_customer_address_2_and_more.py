@@ -6,38 +6,38 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('customers', '0002_customer_city_customer_postcode'),
+        ("customers", "0002_customer_city_customer_postcode"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='customer',
-            name='address_1',
+            model_name="customer",
+            name="address_1",
             field=models.TextField(blank=True),
         ),
         migrations.AlterField(
-            model_name='customer',
-            name='address_2',
+            model_name="customer",
+            name="address_2",
             field=models.TextField(blank=True),
         ),
         migrations.AlterField(
-            model_name='customer',
-            name='city',
+            model_name="customer",
+            name="city",
             field=models.CharField(blank=True, max_length=20),
         ),
         migrations.AlterField(
-            model_name='customer',
-            name='is_active',
+            model_name="customer",
+            name="is_active",
             field=models.BooleanField(default=True),
         ),
         migrations.AlterField(
-            model_name='customer',
-            name='name',
-            field=models.CharField(help_text='Company or Customer name', max_length=30),
+            model_name="customer",
+            name="name",
+            field=models.CharField(help_text="Company or Customer name", max_length=30),
         ),
         migrations.AlterField(
-            model_name='customer',
-            name='notes',
+            model_name="customer",
+            name="notes",
             field=models.TextField(blank=True),
         ),
     ]

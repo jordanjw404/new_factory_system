@@ -1,6 +1,9 @@
 from datetime import timedelta
+
 from django.utils import timezone
+
 from .models import ProductionStage
+
 
 def subtract_day_skip_weekend(date):
     """Adjust date to previous workday, skipping weekends"""
@@ -11,13 +14,14 @@ def subtract_day_skip_weekend(date):
         date -= timedelta(days=2)
     return date
 
+
 def create_production_stage(order):
     """Create a ProductionStage and set target dates based on delivery."""
     if ProductionStage.objects.filter(order=order).exists():
         return ProductionStage.objects.get(order=order)
 
     delivery = order.delivery_date
-    if hasattr(delivery, 'date'):
+    if hasattr(delivery, "date"):
         delivery = delivery.date()
 
     stage = ProductionStage(order=order)
@@ -43,21 +47,24 @@ def create_production_stage(order):
     stage.programming_target_date = prog
     stage.sales_target_date = sales
 
-    stage.estimated_nest_sheets = order.cabs * 0.55 + order.robes * 0.86 + order.panels * 0.1
+    stage.estimated_nest_sheets = (
+        order.cabs * 0.55 + order.robes * 0.86 + order.panels * 0.1
+    )
     stage.estimated_build_cabs = order.cabs + order.robes
 
-    stage.sales_status = 'NOT_STARTED'
-    stage.programming_status = 'NOT_STARTED'
-    stage.nest_status = 'NOT_STARTED'
-    stage.edge_status = 'NOT_STARTED'
-    stage.prep_status = 'NOT_STARTED'
-    stage.build_status = 'NOT_STARTED'
-    stage.fittings_status = 'NOT_STARTED'
-    stage.wrapping_status = 'NOT_STARTED'
-    stage.quality_status = 'NOT_STARTED'
+    stage.sales_status = "NOT_STARTED"
+    stage.programming_status = "NOT_STARTED"
+    stage.nest_status = "NOT_STARTED"
+    stage.edge_status = "NOT_STARTED"
+    stage.prep_status = "NOT_STARTED"
+    stage.build_status = "NOT_STARTED"
+    stage.fittings_status = "NOT_STARTED"
+    stage.wrapping_status = "NOT_STARTED"
+    stage.quality_status = "NOT_STARTED"
 
     stage.save()
     return stage
+
 
 def update_stage_status(production_stage, stage_name, new_status):
     """Update status and auto-set/unset completed date."""
@@ -69,7 +76,7 @@ def update_stage_status(production_stage, stage_name, new_status):
 
     setattr(production_stage, status_field, new_status)
 
-    if new_status == 'COMPLETED':
+    if new_status == "COMPLETED":
         if getattr(production_stage, completed_field) is None:
             setattr(production_stage, completed_field, timezone.now())
     else:
@@ -78,18 +85,35 @@ def update_stage_status(production_stage, stage_name, new_status):
 
     production_stage.save()
 
+
 def all_stages_completed(production_stage):
     stages = [
-        'sales_status', 'programming_status', 'nest_status', 'edge_status',
-        'prep_status', 'build_status', 'fittings_status', 'wrapping_status', 'quality_status'
+        "sales_status",
+        "programming_status",
+        "nest_status",
+        "edge_status",
+        "prep_status",
+        "build_status",
+        "fittings_status",
+        "wrapping_status",
+        "quality_status",
     ]
-    return all(getattr(production_stage, stage) == 'COMPLETED' for stage in stages)
+    return all(getattr(production_stage, stage) == "COMPLETED" for stage in stages)
+
 
 def get_current_stage(production_stage):
     stage_order = [
-        'sales', 'programming', 'nest', 'edge', 'prep', 'build', 'fittings', 'wrapping', 'quality'
+        "sales",
+        "programming",
+        "nest",
+        "edge",
+        "prep",
+        "build",
+        "fittings",
+        "wrapping",
+        "quality",
     ]
     for stage in stage_order:
-        if getattr(production_stage, f"{stage}_status") != 'COMPLETED':
+        if getattr(production_stage, f"{stage}_status") != "COMPLETED":
             return stage.capitalize()
     return "Complete"

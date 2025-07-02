@@ -1,13 +1,16 @@
 import os
 import uuid
-from django.db import models
-from django.conf import settings
+
 import barcode
 from barcode.writer import ImageWriter
+from django.conf import settings
+from django.db import models
 
 
 class BarcodeMixin(models.Model):
-    barcode = models.CharField(max_length=100, unique=True, default=uuid.uuid4, editable=False)
+    barcode = models.CharField(
+        max_length=100, unique=True, default=uuid.uuid4, editable=False
+    )
     barcode_image = models.ImageField(upload_to="barcodes/", blank=True, null=True)
 
     class Meta:
@@ -29,7 +32,7 @@ class BarcodeMixin(models.Model):
         full_path = os.path.join(barcode_dir, filename)
 
         # Get barcode class and generate image
-        code128 = barcode.get_barcode_class('code128')
+        code128 = barcode.get_barcode_class("code128")
         code = code128(str(self.barcode), writer=ImageWriter())
         code.save(full_path[:-4])  # python-barcode adds .png itself
 
