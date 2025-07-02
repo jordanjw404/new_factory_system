@@ -62,7 +62,7 @@
         <td>{{ order.reference }}</td>
         <td>{{ order.get_order_type_display }}</td>
         <td>
-          {% if order.status == 'PENDING' %}
+          {% if order.status == 'NO_PAPERWORK' %}
             <span class="badge bg-warning text-dark">Pending</span>
           {% elif order.status == 'IN_PRODUCTION' %}
             <span class="badge bg-primary">In Production</span>
