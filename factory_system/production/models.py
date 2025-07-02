@@ -1,8 +1,8 @@
 from django.db import models
 from orders.models import Order
 
-
 class ProductionStage(models.Model):
+    
     SALES_STATUS = [
         ('NOT_STARTED', 'Not Started'),
         ('IN_PROGRESS', 'In Progress'),
@@ -25,7 +25,7 @@ class ProductionStage(models.Model):
 
     order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='production_stage')
 
-    # Stage fields
+
     sales_status = models.CharField(max_length=20, choices=SALES_STATUS, default='NOT_STARTED')
     programming_status = models.CharField(max_length=20, choices=STAGE_STATUS, default='NOT_STARTED')
     nest_status = models.CharField(max_length=20, choices=STAGE_STATUS, default='NOT_STARTED')

@@ -12,10 +12,11 @@
 </p>
 
 <div class="table-responsive">
-  <table id="productionDetailTable" class="table table-bordered table-sm text-center align-middle w-100">
+  <table id="productionDetailTable" class="table table-hover table-striped table-bordered table-sm align-middle text-center w-100">
     <thead class="table-dark">
       <tr>
-        <th>Order Ref</th>
+        <th>Order No.</th>
+        <th>Name</th>
         <th>Customer</th>
         {% for field in status_fields %}
           <th>{{ field|capfirst }}<br>Status</th>
@@ -29,6 +30,7 @@
       {% for stage in stages %}
       <tr>
         <td>{{ stage.order.reference }}</td>
+        <td>{{ stage.order.name }}</td>
         <td>{{ stage.order.customer.name }}</td>
 
         {% for field in status_fields %}

@@ -6,7 +6,8 @@ from .filters import OrderFilter
 import csv, openpyxl
 from django.http import HttpResponse
 from django.contrib import messages
-
+from .forms import OrderForm, DeliveryDateUpdateForm
+from production.utils import create_production_stage, compute_stage_targets
 
 @login_required
 def order_list(request):
@@ -33,7 +34,12 @@ def order_create(request):
             order = form.save(commit=False)
             order.created_by = request.user
             order.save()
-            order.maybe_create_production_stage()  # ✅ Automatically create production stage
+            
+            # Create production stage if needed
+            if order.send_to_production:
+                from production.utils import create_production_stage
+                create_production_stage(order)
+                
             return redirect("orders:order_list")
     else:
         form = OrderForm()
@@ -79,15 +85,34 @@ def export_orders_excel(request):
 @login_required
 def order_edit(request, pk):
     order = get_object_or_404(Order, pk=pk)
+    original_delivery_date = order.delivery_date
+    
     if request.method == "POST":
         form = OrderForm(request.POST, instance=order)
         if form.is_valid():
+            new_delivery = form.cleaned_data['delivery_date']
+            
+            # Check if delivery date changed
+            if original_delivery_date != new_delivery:
+                # Save order without updating production dates
+                order = form.save()
+                
+                # Store original date in session for confirmation view
+                request.session['original_delivery_date'] = original_delivery_date.isoformat()
+                return redirect('orders:delivery_date_update', pk=order.pk)
+            
+            # No date change - save normally
             order = form.save()
-            order.maybe_create_production_stage()  # ✅ In case send_to_production is ticked now
+            messages.success(request, "Order updated successfully")
             return redirect('orders:order_list')
     else:
         form = OrderForm(instance=order)
-    return render(request, 'orders/order_form.html', {"form": form, "edit_mode": True})
+    
+    return render(request, 'orders/order_form.html', {
+        "form": form, 
+        "edit_mode": True,
+        "order": order
+    })
 
 
 
@@ -101,3 +126,54 @@ def order_delete(request, pk):
         messages.success(request, f"Order #{order_id} ({order_name}) deleted successfully.")
         return redirect('orders:order_list')
     return render(request, 'orders/order_confirm_delete.html', {"order": order})
+
+@login_required
+def delivery_date_update(request, pk):
+    """Confirmation view for delivery date changes"""
+    order = get_object_or_404(Order, pk=pk)
+    original_date = request.session.pop('original_delivery_date', None)
+    
+    if not original_date:
+        messages.warning(request, "Session expired. Please update the order again.")
+        return redirect('orders:order_edit', pk=pk)
+    
+    try:
+        original_date = date.fromisoformat(original_date)
+    except (TypeError, ValueError):
+        messages.error(request, "Invalid date format")
+        return redirect('orders:order_edit', pk=pk)
+    
+    if request.method == "POST":
+        form = DeliveryDateUpdateForm(request.POST)
+        if form.is_valid():
+            update_choice = form.cleaned_data['update_choice']
+            
+            if update_choice == 'all':
+                # Recalculate all production dates
+                if hasattr(order, 'productionstage'):
+                    # Calculate new targets
+                    targets = compute_stage_targets(order.delivery_date)
+                    
+                    # Update only target dates
+                    for stage, target_date in targets.items():
+                        setattr(
+                            order.productionstage, 
+                            f"{stage}_target_date", 
+                            target_date
+                        )
+                    order.productionstage.save()
+                    messages.success(request, "All production dates updated")
+                else:
+                    messages.info(request, "No production stage to update")
+            
+            messages.success(request, "Order updated successfully")
+            return redirect('orders:order_list')
+    else:
+        form = DeliveryDateUpdateForm()
+    
+    return render(request, 'orders/delivery_date_update.html', {
+        'form': form,
+        'order': order,
+        'original_date': original_date,
+        'new_date': order.delivery_date,
+    })

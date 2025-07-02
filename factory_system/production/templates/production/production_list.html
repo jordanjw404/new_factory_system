@@ -33,7 +33,8 @@
   <table id="productionTable" class="table table-hover table-striped table-bordered table-sm align-middle text-center w-100">
     <thead class="table-dark">
       <tr>
-        <th>Order Ref</th>
+        <th>Order No.</th>
+        <th>Order Name</th>
         <th>Customer</th>
         <th>Sales</th>
         <th>Programming</th>
@@ -51,6 +52,7 @@
       {% for stage in stages %}
       <tr>
         <td>{{ stage.order.reference }}</td>
+        <td>{{ stage.order.name}}</td>
         <td>{{ stage.order.customer.name }}</td>
 
 {% for field in status_fields %}

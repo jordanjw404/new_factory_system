@@ -20,10 +20,6 @@ def UserView(request):
     return render(request, 'create_user.html', 
                 {'users': users, 'hashed_password': hashed_password})
 
-# ✅ Login view (public)
-class CustomLoginView(LoginView):
-    template_name = 'core/pages/login.html'
-
 
 def root_redirect_view(request):
     return redirect('login')

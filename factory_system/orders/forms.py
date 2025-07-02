@@ -51,3 +51,18 @@ class OrderForm(forms.ModelForm):
             FloatingField("owner"),
             Submit("submit", "Save Order", css_class="btn btn-success w-100 mt-3"),
         )
+
+
+
+class DeliveryDateUpdateForm(forms.Form):
+    UPDATE_CHOICES = [
+        ('delivery', 'Only update delivery date'),
+        ('all', 'Update delivery date and all production dates'),
+    ]
+    
+    update_choice = forms.ChoiceField(
+        choices=UPDATE_CHOICES,
+        widget=forms.RadioSelect,
+        label="How would you like to handle the date change?",
+        initial='delivery'
+    )

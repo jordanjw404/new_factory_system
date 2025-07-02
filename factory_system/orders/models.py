@@ -4,15 +4,17 @@ from customers.models import Customer
 from django.db.models import TextChoices
 from django.core.validators import FileExtensionValidator
 from django.utils.translation import gettext_lazy as _
-
+from django.urls import reverse
 
 class Order(models.Model):
 
-    def maybe_create_production_stage(self):
-        from production.models import ProductionStage
-        from production.utils import create_production_stage
+    def get_absolute_url(self):
+        return reverse('orders:order_edit', args=[str(self.id)])
 
-        if self.send_to_production and not hasattr(self, 'production_stage'):
+    def maybe_create_production_stage(self):
+        """Create production stage if needed"""
+        if self.send_to_production and not hasattr(self, 'productionstage'):
+            from production.utils import create_production_stage
             create_production_stage(self)
 
     class Priority(TextChoices):
