@@ -6,20 +6,20 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('production', '0005_productionstage_delivery_completed_date_and_more'),
+        ("production", "0005_productionstage_delivery_completed_date_and_more"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='productionstage',
-            name='delivery_completed_date',
+            model_name="productionstage",
+            name="delivery_completed_date",
         ),
         migrations.RemoveField(
-            model_name='productionstage',
-            name='delivery_status',
+            model_name="productionstage",
+            name="delivery_status",
         ),
         migrations.RemoveField(
-            model_name='productionstage',
-            name='delivery_target_date',
+            model_name="productionstage",
+            name="delivery_target_date",
         ),
     ]

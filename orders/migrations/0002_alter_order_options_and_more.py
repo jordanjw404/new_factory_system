@@ -8,108 +8,195 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('customers', '0002_customer_city_customer_postcode'),
-        ('orders', '0001_initial'),
+        ("customers", "0002_customer_city_customer_postcode"),
+        ("orders", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='order',
+            name="order",
             options={},
         ),
         migrations.RenameField(
-            model_name='order',
-            old_name='order_date',
-            new_name='created_at',
+            model_name="order",
+            old_name="order_date",
+            new_name="created_at",
         ),
         migrations.AddField(
-            model_name='order',
-            name='cabs',
+            model_name="order",
+            name="cabs",
             field=models.PositiveIntegerField(default=0),
         ),
         migrations.AddField(
-            model_name='order',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='created_orders', to=settings.AUTH_USER_MODEL),
+            model_name="order",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="created_orders",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='order',
-            name='delivery_date',
-            field=models.DateField(default='2025-05-01', help_text='Expected delivery or collection date'),
+            model_name="order",
+            name="delivery_date",
+            field=models.DateField(
+                default="2025-05-01", help_text="Expected delivery or collection date"
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='order',
-            name='is_collection',
+            model_name="order",
+            name="is_collection",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='order',
-            name='name',
-            field=models.CharField(default='2025-05-01', max_length=255),
+            model_name="order",
+            name="name",
+            field=models.CharField(default="2025-05-01", max_length=255),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='order',
-            name='order_type',
-            field=models.CharField(choices=[('KITCHEN', 'Kitchen'), ('BEDROOM', 'Bedroom'), ('NON_PRODUCTION', 'Non-Production')], default='KITCHEN', max_length=20),
+            model_name="order",
+            name="order_type",
+            field=models.CharField(
+                choices=[
+                    ("KITCHEN", "Kitchen"),
+                    ("BEDROOM", "Bedroom"),
+                    ("NON_PRODUCTION", "Non-Production"),
+                ],
+                default="KITCHEN",
+                max_length=20,
+            ),
         ),
         migrations.AddField(
-            model_name='order',
-            name='owner',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='owned_orders', to=settings.AUTH_USER_MODEL),
+            model_name="order",
+            name="owner",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="owned_orders",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='order',
-            name='panels',
+            model_name="order",
+            name="panels",
             field=models.PositiveIntegerField(default=0),
         ),
         migrations.AddField(
-            model_name='order',
-            name='reference',
-            field=models.CharField(default='TEMP-REF-001', help_text='Sales order reference', max_length=100),
+            model_name="order",
+            name="reference",
+            field=models.CharField(
+                default="TEMP-REF-001",
+                help_text="Sales order reference",
+                max_length=100,
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='order',
-            name='robes',
+            model_name="order",
+            name="robes",
             field=models.PositiveIntegerField(default=0),
         ),
         migrations.AddField(
-            model_name='order',
-            name='status',
-            field=models.CharField(choices=[('PENDING', 'Pending'), ('IN_PRODUCTION', 'In Production'), ('COMPLETE', 'Complete'), ('DELIVERED', 'Delivered'), ('CANCELLED', 'Cancelled'), ('ON_HOLD', 'On Hold')], default='PENDING', max_length=20),
+            model_name="order",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("PENDING", "Pending"),
+                    ("IN_PRODUCTION", "In Production"),
+                    ("COMPLETE", "Complete"),
+                    ("DELIVERED", "Delivered"),
+                    ("CANCELLED", "Cancelled"),
+                    ("ON_HOLD", "On Hold"),
+                ],
+                default="PENDING",
+                max_length=20,
+            ),
         ),
         migrations.AddField(
-            model_name='order',
-            name='updated_at',
+            model_name="order",
+            name="updated_at",
             field=models.DateTimeField(auto_now=True),
         ),
         migrations.AlterField(
-            model_name='order',
-            name='customer',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='orders', to='customers.customer'),
+            model_name="order",
+            name="customer",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="orders",
+                to="customers.customer",
+            ),
         ),
         migrations.CreateModel(
-            name='OrderAttachment',
+            name="OrderAttachment",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('file', models.FileField(upload_to='order_attachments/')),
-                ('uploaded_at', models.DateTimeField(auto_now_add=True)),
-                ('order', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='attachments', to='orders.order')),
-                ('uploaded_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("file", models.FileField(upload_to="order_attachments/")),
+                ("uploaded_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "order",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="attachments",
+                        to="orders.order",
+                    ),
+                ),
+                (
+                    "uploaded_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='OrderLog',
+            name="OrderLog",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('action', models.CharField(max_length=255)),
-                ('timestamp', models.DateTimeField(auto_now_add=True)),
-                ('notes', models.TextField(blank=True)),
-                ('order', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='logs', to='orders.order')),
-                ('performed_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("action", models.CharField(max_length=255)),
+                ("timestamp", models.DateTimeField(auto_now_add=True)),
+                ("notes", models.TextField(blank=True)),
+                (
+                    "order",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="logs",
+                        to="orders.order",
+                    ),
+                ),
+                (
+                    "performed_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
     ]

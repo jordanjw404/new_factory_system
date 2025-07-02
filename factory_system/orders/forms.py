@@ -1,7 +1,7 @@
-from django import forms
-from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Submit, Row, Column, Field
 from crispy_bootstrap5.bootstrap5 import FloatingField
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Column, Field, Layout, Row, Submit
+from django import forms
 
 from .models import Order
 
@@ -10,10 +10,19 @@ class OrderForm(forms.ModelForm):
     class Meta:
         model = Order
         fields = [
-            "name", "customer", "reference", "delivery_date", "is_collection",
-            "order_type", "priority", "status",
-            "robes", "cabs", "panels",
-            "owner", "send_to_production"
+            "name",
+            "customer",
+            "reference",
+            "delivery_date",
+            "is_collection",
+            "order_type",
+            "priority",
+            "status",
+            "robes",
+            "cabs",
+            "panels",
+            "owner",
+            "send_to_production",
         ]
         widgets = {
             "delivery_date": forms.DateInput(attrs={"type": "date"}),
@@ -53,16 +62,15 @@ class OrderForm(forms.ModelForm):
         )
 
 
-
 class DeliveryDateUpdateForm(forms.Form):
     UPDATE_CHOICES = [
-        ('delivery', 'Only update delivery date'),
-        ('all', 'Update delivery date and all production dates'),
+        ("delivery", "Only update delivery date"),
+        ("all", "Update delivery date and all production dates"),
     ]
-    
+
     update_choice = forms.ChoiceField(
         choices=UPDATE_CHOICES,
         widget=forms.RadioSelect,
         label="How would you like to handle the date change?",
-        initial='delivery'
+        initial="delivery",
     )

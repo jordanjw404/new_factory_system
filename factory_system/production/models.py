@@ -1,40 +1,61 @@
 from django.db import models
+
 from orders.models import Order
 
+
 class ProductionStage(models.Model):
-    
+
     SALES_STATUS = [
-        ('NOT_STARTED', 'Not Started'),
-        ('IN_PROGRESS', 'In Progress'),
-        ('STUCK', 'Stuck'),
-        ('ON_HOLD', 'On Hold'),
-        ('CONFIRMATION', 'Confirmation'),
-        ('COMPLETED', 'Completed'),
-        ('NO_PAPERWORK', 'No Paperwork'),
+        ("NOT_STARTED", "Not Started"),
+        ("IN_PROGRESS", "In Progress"),
+        ("STUCK", "Stuck"),
+        ("ON_HOLD", "On Hold"),
+        ("CONFIRMATION", "Confirmation"),
+        ("COMPLETED", "Completed"),
+        ("NO_PAPERWORK", "No Paperwork"),
     ]
 
     STAGE_STATUS = [
-        ('NOT_STARTED', 'Not Started'),
-        ('IN_PROGRESS', 'In Progress'),
-        ('STUCK', 'Stuck'),
-        ('ON_HOLD', 'On Hold'),
-        ('CANCELLED', 'Cancelled'),
-        ('COMPLETED', 'Completed'),
-        ('READY', 'Ready'),
+        ("NOT_STARTED", "Not Started"),
+        ("IN_PROGRESS", "In Progress"),
+        ("STUCK", "Stuck"),
+        ("ON_HOLD", "On Hold"),
+        ("CANCELLED", "Cancelled"),
+        ("COMPLETED", "Completed"),
+        ("READY", "Ready"),
     ]
 
-    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='production_stage')
+    order = models.OneToOneField(
+        Order, on_delete=models.CASCADE, related_name="production_stage"
+    )
 
-
-    sales_status = models.CharField(max_length=20, choices=SALES_STATUS, default='NOT_STARTED')
-    programming_status = models.CharField(max_length=20, choices=STAGE_STATUS, default='NOT_STARTED')
-    nest_status = models.CharField(max_length=20, choices=STAGE_STATUS, default='NOT_STARTED')
-    edge_status = models.CharField(max_length=20, choices=STAGE_STATUS, default='NOT_STARTED')
-    prep_status = models.CharField(max_length=20, choices=STAGE_STATUS, default='NOT_STARTED')
-    build_status = models.CharField(max_length=20, choices=STAGE_STATUS, default='NOT_STARTED')
-    fittings_status = models.CharField(max_length=20, choices=STAGE_STATUS, default='NOT_STARTED')
-    wrapping_status = models.CharField(max_length=20, choices=STAGE_STATUS, default='NOT_STARTED')
-    quality_status = models.CharField(max_length=20, choices=STAGE_STATUS, default='NOT_STARTED')
+    sales_status = models.CharField(
+        max_length=20, choices=SALES_STATUS, default="NOT_STARTED"
+    )
+    programming_status = models.CharField(
+        max_length=20, choices=STAGE_STATUS, default="NOT_STARTED"
+    )
+    nest_status = models.CharField(
+        max_length=20, choices=STAGE_STATUS, default="NOT_STARTED"
+    )
+    edge_status = models.CharField(
+        max_length=20, choices=STAGE_STATUS, default="NOT_STARTED"
+    )
+    prep_status = models.CharField(
+        max_length=20, choices=STAGE_STATUS, default="NOT_STARTED"
+    )
+    build_status = models.CharField(
+        max_length=20, choices=STAGE_STATUS, default="NOT_STARTED"
+    )
+    fittings_status = models.CharField(
+        max_length=20, choices=STAGE_STATUS, default="NOT_STARTED"
+    )
+    wrapping_status = models.CharField(
+        max_length=20, choices=STAGE_STATUS, default="NOT_STARTED"
+    )
+    quality_status = models.CharField(
+        max_length=20, choices=STAGE_STATUS, default="NOT_STARTED"
+    )
 
     # Target Dates
     sales_target_date = models.DateField(null=True, blank=True)
@@ -67,7 +88,7 @@ class ProductionStage(models.Model):
         return f"Production for Order: {self.order.reference}"
 
     class Meta:
-        ordering = ['-order__delivery_date']
+        ordering = ["-order__delivery_date"]
 
     def get_current_stage_name(self):
         stages = [
@@ -82,15 +103,16 @@ class ProductionStage(models.Model):
             ("Quality", self.quality_status),
         ]
         for i, (name, status) in enumerate(stages):
-            if status != 'COMPLETED':
-                if i == 0 or stages[i - 1][1] == 'COMPLETED':
+            if status != "COMPLETED":
+                if i == 0 or stages[i - 1][1] == "COMPLETED":
                     return name
                 return name
         return "Complete"
 
     def all_stages_completed(self):
         return all(
-            status == 'COMPLETED' for status in [
+            status == "COMPLETED"
+            for status in [
                 self.sales_status,
                 self.programming_status,
                 self.nest_status,

@@ -1,8 +1,10 @@
 # production/signals.py
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+
 from .models import Order, ProductionStage
 from .utils import create_production_stage
+
 
 @receiver(post_save, sender=Order)
 def trigger_production_creation(sender, instance, created, **kwargs):

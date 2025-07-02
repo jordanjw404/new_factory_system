@@ -1,28 +1,60 @@
-from django import forms
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Submit, Row, Column, Field, ButtonHolder
+from crispy_forms.layout import (ButtonHolder, Column, Field, Layout, Row,
+                                 Submit)
+from django import forms
+
 from .models import Customer, CustomerDocument
+
+
 class CustomerForm(forms.ModelForm):
     class Meta:
         model = Customer
         fields = [
-            "name", "contact_name", "email", "phone", "mobile",
-            "address_1", "address_2", "city", "postcode", "notes", "is_active"
+            "name",
+            "contact_name",
+            "email",
+            "phone",
+            "mobile",
+            "address_1",
+            "address_2",
+            "city",
+            "postcode",
+            "notes",
+            "is_active",
         ]
         widgets = {
-            "name": forms.TextInput(attrs={"class": "form-control", "placeholder": " "}),
-            "contact_name": forms.TextInput(attrs={"class": "form-control", "placeholder": " "}),
-            "email": forms.EmailInput(attrs={"class": "form-control", "placeholder": " "}),
-            "phone": forms.TextInput(attrs={"class": "form-control", "placeholder": " "}),
-            "mobile": forms.TextInput(attrs={"class": "form-control", "placeholder": " "}),
-            "address_1": forms.TextInput(attrs={"class": "form-control", "placeholder": " "}),
-            "address_2": forms.TextInput(attrs={"class": "form-control", "placeholder": " "}),
-            "city": forms.TextInput(attrs={"class": "form-control", "placeholder": " "}),
-            "postcode": forms.TextInput(attrs={"class": "form-control", "placeholder": " "}),
-            "notes": forms.Textarea(attrs={"class": "form-control", "placeholder": " ", "rows": 3}),
+            "name": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": " "}
+            ),
+            "contact_name": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": " "}
+            ),
+            "email": forms.EmailInput(
+                attrs={"class": "form-control", "placeholder": " "}
+            ),
+            "phone": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": " "}
+            ),
+            "mobile": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": " "}
+            ),
+            "address_1": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": " "}
+            ),
+            "address_2": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": " "}
+            ),
+            "city": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": " "}
+            ),
+            "postcode": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": " "}
+            ),
+            "notes": forms.Textarea(
+                attrs={"class": "form-control", "placeholder": " ", "rows": 3}
+            ),
             "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
-
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -51,15 +83,18 @@ class CustomerForm(forms.ModelForm):
                 Column("is_active", css_class="col-md-4"),
             ),
             ButtonHolder(
-                Submit("submit", "Save Customer", css_class="btn btn-primary w-100 mt-3")
-            )
+                Submit(
+                    "submit", "Save Customer", css_class="btn btn-primary w-100 mt-3"
+                )
+            ),
         )
 
 
 class CustomerImportForm(forms.Form):
-    csv_file = forms.FileField(label='Upload CSV file')
+    csv_file = forms.FileField(label="Upload CSV file")
+
 
 class CustomerDocumentForm(forms.ModelForm):
     class Meta:
         model = CustomerDocument
-        fields = ['file', 'description']
+        fields = ["file", "description"]

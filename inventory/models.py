@@ -1,9 +1,11 @@
-from django.db import models
-from django.utils.text import slugify
+import uuid
+
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.db import models
+from django.utils.text import slugify
+
 from .mixins import BarcodeMixin
-import uuid
 
 
 class Supplier(models.Model):
@@ -26,12 +28,12 @@ class Supplier(models.Model):
 
 class Cabinet(BarcodeMixin):
     CABINET_TYPES = [
-        ('Base Unit', 'Base Unit'),
-        ('Wall Unit', 'Wall Unit'),
-        ('Tall Unit', 'Tall Unit'),
-        ('Corner Unit', 'Corner Unit'),
-        ('Drawer Unit', 'Drawer Unit'),
-        ('Pull-Out Unit', 'Pull-Out Unit'),
+        ("Base Unit", "Base Unit"),
+        ("Wall Unit", "Wall Unit"),
+        ("Tall Unit", "Tall Unit"),
+        ("Corner Unit", "Corner Unit"),
+        ("Drawer Unit", "Drawer Unit"),
+        ("Pull-Out Unit", "Pull-Out Unit"),
     ]
     code = models.CharField(max_length=100, unique=True)
     name = models.CharField(max_length=100)
@@ -58,7 +60,9 @@ class Hardware(BarcodeMixin):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
     cost = models.DecimalField(max_digits=10, decimal_places=2)
-    supplier = models.ForeignKey(Supplier, on_delete=models.SET_NULL, null=True, blank=True)
+    supplier = models.ForeignKey(
+        Supplier, on_delete=models.SET_NULL, null=True, blank=True
+    )
     order = models.ForeignKey("Order", on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     slug = models.SlugField(unique=True, blank=True)
@@ -79,7 +83,9 @@ class Board(BarcodeMixin):
     width = models.DecimalField(max_digits=10, decimal_places=2)
     thickness = models.DecimalField(max_digits=10, decimal_places=2)
     cost = models.DecimalField(max_digits=10, decimal_places=2)
-    parent_board = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True, related_name="offcuts")
+    parent_board = models.ForeignKey(
+        "self", on_delete=models.SET_NULL, null=True, blank=True, related_name="offcuts"
+    )
     order = models.ForeignKey("Order", on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     slug = models.SlugField(unique=True, blank=True)
@@ -128,14 +134,17 @@ class Order(models.Model):
     def __str__(self):
         return f"Order {self.order_number} - {self.customer_name}"
 
+
 class Inventory(BarcodeMixin):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
-    item = GenericForeignKey('content_type', 'object_id')
+    item = GenericForeignKey("content_type", "object_id")
     quantity_on_hand = models.PositiveIntegerField(default=0)
     quantity_reserved = models.PositiveIntegerField(default=0)
     quantity_available = models.PositiveIntegerField(default=0)
-    location = models.ForeignKey("Location", on_delete=models.SET_NULL, null=True, blank=True)
+    location = models.ForeignKey(
+        "Location", on_delete=models.SET_NULL, null=True, blank=True
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     slug = models.SlugField(unique=True, blank=True)  # Make sure this line is present
@@ -151,15 +160,27 @@ class Inventory(BarcodeMixin):
 
 class Transaction(models.Model):
     TRANSACTION_TYPES = [
-        ('IN', 'IN'),
-        ('OUT', 'OUT'),
-        ('MOVE', 'MOVE'),
+        ("IN", "IN"),
+        ("OUT", "OUT"),
+        ("MOVE", "MOVE"),
     ]
     item_id = models.PositiveIntegerField()
     transaction_type = models.CharField(max_length=4, choices=TRANSACTION_TYPES)
     quantity = models.PositiveIntegerField()
-    from_location = models.ForeignKey("Location", on_delete=models.SET_NULL, null=True, blank=True, related_name='transactions_from')
-    to_location = models.ForeignKey("Location", on_delete=models.SET_NULL, null=True, blank=True, related_name='transactions_to')
+    from_location = models.ForeignKey(
+        "Location",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="transactions_from",
+    )
+    to_location = models.ForeignKey(
+        "Location",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="transactions_to",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     slug = models.SlugField(unique=True, blank=True)
 
@@ -171,10 +192,17 @@ class Transaction(models.Model):
     def __str__(self):
         return f"{self.transaction_type} - Item ID: {self.item_id} - Quantity: {self.quantity}"
 
+
 class Location(models.Model):
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True, null=True)
-    parent_location = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True, related_name="sub_locations")
+    parent_location = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="sub_locations",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     slug = models.SlugField(unique=True, blank=True)
 

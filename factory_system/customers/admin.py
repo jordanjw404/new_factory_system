@@ -1,6 +1,6 @@
 from django.contrib import admin
-from .models import Customer
 
+from .models import Customer
 
 
 @admin.register(Customer)
@@ -10,4 +10,3 @@ class CustomerAdmin(admin.ModelAdmin):
     search_fields = ("name", "contact_name", "email", "phone", "mobile")
     ordering = ("name",)
     readonly_fields = ("created_at", "updated_at")  # display timestamps as read-only
-

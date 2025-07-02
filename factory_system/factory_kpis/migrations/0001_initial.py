@@ -7,18 +7,25 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='build_kpi',
+            name="build_kpi",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('build_id', models.CharField(max_length=100, unique=True)),
-                ('build_time', models.FloatField()),
-                ('build_quality', models.FloatField()),
-                ('build_cost', models.FloatField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("build_id", models.CharField(max_length=100, unique=True)),
+                ("build_time", models.FloatField()),
+                ("build_quality", models.FloatField()),
+                ("build_cost", models.FloatField()),
             ],
         ),
     ]

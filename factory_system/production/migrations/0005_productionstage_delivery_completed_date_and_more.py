@@ -6,23 +6,36 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('production', '0004_alter_productionstage_build_status_and_more'),
+        ("production", "0004_alter_productionstage_build_status_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='productionstage',
-            name='delivery_completed_date',
+            model_name="productionstage",
+            name="delivery_completed_date",
             field=models.DateField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='productionstage',
-            name='delivery_status',
-            field=models.CharField(choices=[('NOT_STARTED', 'Not Started'), ('IN_PROGRESS', 'In Progress'), ('STUCK', 'Stuck'), ('ON_HOLD', 'On Hold'), ('CANCELLED', 'Cancelled'), ('COMPLETED', 'Completed'), ('READY', 'Ready'), ('EN_ROUTE', 'En Route')], default='NOT_STARTED', max_length=20),
+            model_name="productionstage",
+            name="delivery_status",
+            field=models.CharField(
+                choices=[
+                    ("NOT_STARTED", "Not Started"),
+                    ("IN_PROGRESS", "In Progress"),
+                    ("STUCK", "Stuck"),
+                    ("ON_HOLD", "On Hold"),
+                    ("CANCELLED", "Cancelled"),
+                    ("COMPLETED", "Completed"),
+                    ("READY", "Ready"),
+                    ("EN_ROUTE", "En Route"),
+                ],
+                default="NOT_STARTED",
+                max_length=20,
+            ),
         ),
         migrations.AddField(
-            model_name='productionstage',
-            name='delivery_target_date',
+            model_name="productionstage",
+            name="delivery_target_date",
             field=models.DateField(blank=True, null=True),
         ),
     ]

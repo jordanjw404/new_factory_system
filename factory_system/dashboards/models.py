@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class ProductionStage(models.Model):
     build_date = models.DateField()
     cabinet_count = models.PositiveIntegerField()

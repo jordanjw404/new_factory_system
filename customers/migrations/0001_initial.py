@@ -15,27 +15,87 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Customer',
+            name="Customer",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(help_text='Company or Customer name', max_length=255)),
-                ('contact_name', models.CharField(blank=True, max_length=255, verbose_name='Contact Person')),
-                ('email', models.EmailField(max_length=254, unique=True)),
-                ('phone', models.CharField(blank=True, max_length=20, verbose_name='Phone Number')),
-                ('mobile', models.CharField(blank=True, max_length=20, verbose_name='Mobile Number')),
-                ('address_1', models.TextField(blank=True, help_text='Mailing address for the customer')),
-                ('address_2', models.TextField(blank=True, help_text='Mailing address for the customer')),
-                ('notes', models.TextField(blank=True, help_text='Internal notes about the customer')),
-                ('is_active', models.BooleanField(default=True, help_text='Active status of the customer')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('created_by', models.ForeignKey(blank=True, help_text='User who added this customer', null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(
+                        help_text="Company or Customer name", max_length=255
+                    ),
+                ),
+                (
+                    "contact_name",
+                    models.CharField(
+                        blank=True, max_length=255, verbose_name="Contact Person"
+                    ),
+                ),
+                ("email", models.EmailField(max_length=254, unique=True)),
+                (
+                    "phone",
+                    models.CharField(
+                        blank=True, max_length=20, verbose_name="Phone Number"
+                    ),
+                ),
+                (
+                    "mobile",
+                    models.CharField(
+                        blank=True, max_length=20, verbose_name="Mobile Number"
+                    ),
+                ),
+                (
+                    "address_1",
+                    models.TextField(
+                        blank=True, help_text="Mailing address for the customer"
+                    ),
+                ),
+                (
+                    "address_2",
+                    models.TextField(
+                        blank=True, help_text="Mailing address for the customer"
+                    ),
+                ),
+                (
+                    "notes",
+                    models.TextField(
+                        blank=True, help_text="Internal notes about the customer"
+                    ),
+                ),
+                (
+                    "is_active",
+                    models.BooleanField(
+                        default=True, help_text="Active status of the customer"
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True,
+                        help_text="User who added this customer",
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Customer',
-                'verbose_name_plural': 'Customers',
-                'ordering': ['name'],
-                'indexes': [models.Index(fields=['name'], name='customers_c_name_f018e2_idx'), models.Index(fields=['email'], name='customers_c_email_4fdeb3_idx')],
+                "verbose_name": "Customer",
+                "verbose_name_plural": "Customers",
+                "ordering": ["name"],
+                "indexes": [
+                    models.Index(fields=["name"], name="customers_c_name_f018e2_idx"),
+                    models.Index(fields=["email"], name="customers_c_email_4fdeb3_idx"),
+                ],
             },
         ),
     ]
