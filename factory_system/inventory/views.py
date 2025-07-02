@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.contrib.contenttypes.models import ContentType
+from django.http import HttpResponse
 from .models import Inventory
 
 def inventory_list_view(request):
