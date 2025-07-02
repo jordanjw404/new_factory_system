@@ -147,7 +147,7 @@ def import_customers_csv(request):
                     address_1=row.get('Address 1', ''),
                     address_2=row.get('Address 2', ''),
                     city=row.get('City', ''),
-                    post_code=row.get('Post Code', ''),
+                    postcode=row.get('Post Code', ''),
                     notes=row.get('Notes', ''),
                     is_active=(row.get('Is Active', '').lower() == 'yes'),
                     created_by=request.user
