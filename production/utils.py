@@ -1,119 +1,195 @@
-from datetime import timedelta
-
+from datetime import date, datetime, timedelta
+from typing import Dict, Optional, Any
+import holidays
 from django.utils import timezone
-
 from .models import ProductionStage
 
+# Function to get UK holidays for specific year
+def get_uk_holidays(year: int) -> set:
+    """Get UK holidays for specific year"""
+    return set(holidays.UnitedKingdom(years=[year]).keys())
 
-def subtract_day_skip_weekend(date):
-    """Adjust date to previous workday, skipping weekends"""
-    date -= timedelta(days=1)
-    if date.weekday() == 5:  # Saturday
-        date -= timedelta(days=1)
-    elif date.weekday() == 6:  # Sunday
-        date -= timedelta(days=2)
-    return date
+# Sequence of stages from closest to delivery backwards
+STAGE_SEQUENCE = [
+    'quality',
+    'wrapping',
+    'fittings',
+    'build',
+    'prep',
+    'edge',
+    'nest',
+    'programming',
+    'sales',
+]
+
+# Default calendar-day offsets per stage (days to subtract before adjustment)
+DEFAULT_OFFSETS: Dict[str, int] = {
+    'sales': 7,
+    'programming': 2,
+    'nest': 1,
+    'edge': 1,
+    'prep': 1,
+    'build': 1,
+    'fittings': 1,
+    'wrapping': 1,
+    'quality': 1,
+}
 
 
-def create_production_stage(order):
-    """Create a ProductionStage and set target dates based on delivery."""
-    if ProductionStage.objects.filter(order=order).exists():
-        return ProductionStage.objects.get(order=order)
+def adjust_for_non_business(dt: date) -> date:
+    """
+    Continuously move dt back one day at a time until it's a valid business day:
+      - Skip Saturdays & Sundays
+      - Skip UK bank holidays
+    """
+    if not isinstance(dt, date):
+        raise TypeError(f"Expected date, got {type(dt)}")
+    
+    # Get holidays for the relevant year
+    uk_holidays = get_uk_holidays(dt.year)
+    
+    while dt.weekday() >= 5 or dt in uk_holidays:
+        dt -= timedelta(days=1)
+        # Check if we crossed into previous year
+        if dt.year not in uk_holidays:
+            uk_holidays = get_uk_holidays(dt.year)
+    
+    return dt
 
+
+def subtract_and_adjust(start_dt: date, days: int) -> date:
+    """
+    Subtract `days` calendar days, then apply adjustment to business day.
+    """
+    if not isinstance(start_dt, date):
+        raise TypeError(f"Expected date, got {type(start_dt)}")
+    if not isinstance(days, int) or days < 0:
+        raise ValueError(f"Days must be non-negative int, got {days}")
+    
+    # Calculate raw target date
+    target = start_dt - timedelta(days=days)
+    
+    # Adjust to business day
+    return adjust_for_non_business(target)
+
+
+def compute_stage_targets(
+    delivery_date: date,
+    offsets: Optional[Dict[str, int]] = None
+) -> Dict[str, date]:
+    """
+    Compute target dates sequentially from delivery_date using offsets.
+    """
+    if not isinstance(delivery_date, date):
+        if isinstance(delivery_date, datetime):
+            delivery_date = delivery_date.date()
+        else:
+            raise TypeError("delivery_date must be date or datetime")
+    
+    # Prepare offsets (custom override defaults)
+    stage_offsets = DEFAULT_OFFSETS.copy()
+    if offsets:
+        if not isinstance(offsets, dict):
+            raise TypeError("Offsets must be dict of str->int")
+        for stage, days in offsets.items():
+            if stage not in DEFAULT_OFFSETS:
+                raise KeyError(f"Unknown stage: {stage}")
+            if not isinstance(days, int) or days < 0:
+                raise ValueError(f"Offset for {stage} must be non-negative int")
+            stage_offsets[stage] = days
+    
+    targets: Dict[str, date] = {}
+    current_date = delivery_date
+    
+    # Process stages from delivery backwards
+    for stage in STAGE_SEQUENCE:
+        days = stage_offsets[stage]
+        current_date = subtract_and_adjust(current_date, days)
+        targets[stage] = current_date
+    
+    return targets
+
+
+def create_production_stage(order: Any, offsets: Optional[Dict[str, int]] = None) -> ProductionStage:
+    """
+    Create a new production stage with calculated dates.
+    """
+    obj = ProductionStage.objects.create(order=order)
+    
+    # Extract delivery date
     delivery = order.delivery_date
-    if hasattr(delivery, "date"):
+    if isinstance(delivery, datetime):
         delivery = delivery.date()
-
-    stage = ProductionStage(order=order)
-
-    # Calculate target dates in reverse order
-    qc = subtract_day_skip_weekend(delivery)
-    wrap = subtract_day_skip_weekend(qc)
-    fit = subtract_day_skip_weekend(wrap)
-    build = subtract_day_skip_weekend(fit)
-    prep = subtract_day_skip_weekend(build)
-    edge = subtract_day_skip_weekend(prep)
-    nest = subtract_day_skip_weekend(edge)
-    prog = subtract_day_skip_weekend(nest)
-    sales = subtract_day_skip_weekend(prog)
-
-    stage.quality_target_date = qc
-    stage.wrapping_target_date = wrap
-    stage.fittings_target_date = fit
-    stage.build_target_date = build
-    stage.prep_target_date = prep
-    stage.edge_target_date = edge
-    stage.nest_target_date = nest
-    stage.programming_target_date = prog
-    stage.sales_target_date = sales
-
-    stage.estimated_nest_sheets = (
-        order.cabs * 0.55 + order.robes * 0.86 + order.panels * 0.1
-    )
-    stage.estimated_build_cabs = order.cabs + order.robes
-
-    stage.sales_status = "NOT_STARTED"
-    stage.programming_status = "NOT_STARTED"
-    stage.nest_status = "NOT_STARTED"
-    stage.edge_status = "NOT_STARTED"
-    stage.prep_status = "NOT_STARTED"
-    stage.build_status = "NOT_STARTED"
-    stage.fittings_status = "NOT_STARTED"
-    stage.wrapping_status = "NOT_STARTED"
-    stage.quality_status = "NOT_STARTED"
-
-    stage.save()
-    return stage
+    
+    # Calculate all stage targets
+    targets = compute_stage_targets(delivery, offsets)
+    
+    # Apply targets to model
+    for stage, target_date in targets.items():
+        setattr(obj, f"{stage}_target_date", target_date)
+    
+    # Set estimates
+    obj.estimated_nest_sheets = order.cabs * 0.55 + order.robes * 0.86 + order.panels * 0.1
+    obj.estimated_build_cabs = order.cabs + order.robes
+    
+    # Initialize statuses
+    for stage in DEFAULT_OFFSETS:
+        setattr(obj, f"{stage}_status", 'NOT_STARTED')
+    
+    obj.save()
+    return obj
 
 
-def update_stage_status(production_stage, stage_name, new_status):
-    """Update status and auto-set/unset completed date."""
-    status_field = f"{stage_name}_status"
-    completed_field = f"{stage_name}_completed_date"
-
-    if not hasattr(production_stage, status_field):
-        raise ValueError(f"Invalid stage name: {stage_name}")
-
-    setattr(production_stage, status_field, new_status)
-
-    if new_status == "COMPLETED":
-        if getattr(production_stage, completed_field) is None:
-            setattr(production_stage, completed_field, timezone.now())
-    else:
-        if getattr(production_stage, completed_field):
-            setattr(production_stage, completed_field, None)
-
+def update_production_dates(production_stage: ProductionStage, new_delivery: date):
+    """
+    Update target dates without changing statuses.
+    """
+    # Calculate all stage targets
+    targets = compute_stage_targets(new_delivery)
+    
+    # Update only target dates
+    for stage, target_date in targets.items():
+        setattr(production_stage, f"{stage}_target_date", target_date)
+    
     production_stage.save()
 
 
-def all_stages_completed(production_stage):
-    stages = [
-        "sales_status",
-        "programming_status",
-        "nest_status",
-        "edge_status",
-        "prep_status",
-        "build_status",
-        "fittings_status",
-        "wrapping_status",
-        "quality_status",
-    ]
-    return all(getattr(production_stage, stage) == "COMPLETED" for stage in stages)
+def update_stage_status(production_stage: ProductionStage, stage_name: str, new_status: str) -> None:
+    """
+    Update stage status and completed_date.
+    """
+    status_field = f"{stage_name}_status"
+    comp_field = f"{stage_name}_completed_date"
+    
+    if not hasattr(production_stage, status_field):
+        raise ValueError(f"Invalid stage: {stage_name}")
+    
+    setattr(production_stage, status_field, new_status)
+    
+    # Update completed date
+    if new_status == 'COMPLETED':
+        if not getattr(production_stage, comp_field):
+            setattr(production_stage, comp_field, timezone.now())
+    else:
+        # Clear completion date if status changed from COMPLETED
+        if getattr(production_stage, comp_field):
+            setattr(production_stage, comp_field, None)
+    
+    production_stage.save()
 
 
-def get_current_stage(production_stage):
-    stage_order = [
-        "sales",
-        "programming",
-        "nest",
-        "edge",
-        "prep",
-        "build",
-        "fittings",
-        "wrapping",
-        "quality",
-    ]
-    for stage in stage_order:
-        if getattr(production_stage, f"{stage}_status") != "COMPLETED":
+def all_stages_completed(production_stage: ProductionStage) -> bool:
+    """Check if all production stages are completed"""
+    return all(
+        getattr(production_stage, f"{stage}_status") == 'COMPLETED'
+        for stage in DEFAULT_OFFSETS
+    )
+
+
+def get_current_stage(production_stage: ProductionStage) -> str:
+    """Get the first incomplete stage in production sequence"""
+    # Follow forward sequence (reverse of STAGE_SEQUENCE)
+    for stage in reversed(STAGE_SEQUENCE):
+        if getattr(production_stage, f"{stage}_status") != 'COMPLETED':
             return stage.capitalize()
-    return "Complete"
+    return 'Complete'

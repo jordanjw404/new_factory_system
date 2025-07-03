@@ -1,33 +1,26 @@
-import csv
-
-import openpyxl
-from django.contrib import messages
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, redirect, render
-
-from .filters import OrderFilter
-from .forms import OrderForm
 from .models import Order
-
+from .forms import OrderForm, DeliveryDateUpdateForm
+from .filters import OrderFilter
+import openpyxl
+from datetime import date
 
 @login_required
 def order_list(request):
     order_by = request.GET.get("sort", "-created_at")
     order_filter = OrderFilter(
-        request.GET,
-        queryset=Order.objects.select_related("customer", "owner").order_by(order_by),
+        request.GET, 
+        queryset=Order.objects.select_related("customer").order_by(order_by)
     )
-
-    return render(
-        request,
-        "orders/orders_list.html",
-        {
-            "filter": order_filter,
-            "orders": order_filter.qs,
-            "current_sort": order_by,
-        },
-    )
+    
+    return render(request, "orders/orders_list.html", {
+        "filter": order_filter,
+        "orders": order_filter.qs,
+        "current_sort": order_by,
+    })
 
 
 @login_required
@@ -44,7 +37,12 @@ def order_create(request):
             order = form.save(commit=False)
             order.created_by = request.user
             order.save()
-            order.maybe_create_production_stage()  # ✅ Automatically create production stage
+            
+            # Create production stage if needed
+            if order.send_to_production:
+                from production.utils import create_production_stage
+                create_production_stage(order)
+                
             return redirect("orders:order_list")
     else:
         form = OrderForm()
@@ -104,15 +102,40 @@ def export_orders_excel(request):
 @login_required
 def order_edit(request, pk):
     order = get_object_or_404(Order, pk=pk)
+    original_delivery_date = order.delivery_date
+    
     if request.method == "POST":
         form = OrderForm(request.POST, instance=order)
         if form.is_valid():
+            new_delivery = form.cleaned_data['delivery_date']
+            
+            # Check if delivery date changed
+            if original_delivery_date != new_delivery:
+                # Save order without updating production dates
+                order = form.save()
+                
+                # Store original date in session for confirmation view
+                request.session['original_delivery_date'] = original_delivery_date.isoformat()
+                return redirect('orders:delivery_date_update', pk=order.pk)
+            
+            # No date change - save normally
             order = form.save()
-            order.maybe_create_production_stage()  # ✅ In case send_to_production is ticked now
-            return redirect("orders:order_list")
+            
+            # Create production stage if needed
+            if order.send_to_production and not hasattr(order, 'productionstage'):
+                from production.utils import create_production_stage
+                create_production_stage(order)
+                
+            messages.success(request, "Order updated successfully")
+            return redirect('orders:order_list')
     else:
         form = OrderForm(instance=order)
-    return render(request, "orders/order_form.html", {"form": form, "edit_mode": True})
+    
+    return render(request, 'orders/order_form.html', {
+        "form": form, 
+        "edit_mode": True,
+        "order": order
+    })
 
 
 @login_required
@@ -127,3 +150,43 @@ def order_delete(request, pk):
         )
         return redirect("orders:order_list")
     return render(request, "orders/order_confirm_delete.html", {"order": order})
+
+@login_required
+def delivery_date_update(request, pk):
+    """Confirmation view for delivery date changes"""
+    order = get_object_or_404(Order, pk=pk)
+    original_date = request.session.pop('original_delivery_date', None)
+    
+    if not original_date:
+        messages.warning(request, "Session expired. Please update the order again.")
+        return redirect('orders:order_edit', pk=pk)
+    
+    try:
+        original_date = date.fromisoformat(original_date)
+    except (TypeError, ValueError):
+        messages.error(request, "Invalid date format")
+        return redirect('orders:order_edit', pk=pk)
+    
+    if request.method == "POST":
+        form = DeliveryDateUpdateForm(request.POST)
+        if form.is_valid():
+            update_choice = form.cleaned_data['update_choice']
+            
+            if update_choice == 'all' and hasattr(order, 'productionstage'):
+                # Recalculate all production dates
+                from production.utils import update_production_dates
+                update_production_dates(order.productionstage, order.delivery_date)
+                messages.success(request, "All production dates updated")
+            else:
+                messages.info(request, "Only delivery date updated")
+            
+            return redirect('orders:order_edit', pk=order.pk)
+    else:
+        form = DeliveryDateUpdateForm()
+    
+    return render(request, 'orders/delivery_date_update.html', {
+        'form': form,
+        'order': order,
+        'original_date': original_date,
+        'new_date': order.delivery_date,
+    })

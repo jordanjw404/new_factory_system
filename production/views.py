@@ -320,42 +320,25 @@ def update_target_date(request, stage_id):
 
 
 @csrf_exempt
+@require_POST
 @login_required
 def production_update_status(request, pk):
-    if request.method == "POST":
-        try:
-            stage = get_object_or_404(ProductionStage, pk=pk)
-            data = json.loads(request.body)
-
-            status_field = data.get("status_field")  # e.g., 'sales_status'
-            new_value = data.get("new_value")  # e.g., 'COMPLETED'
-
-            if not status_field or not hasattr(stage, status_field):
-                return JsonResponse(
-                    {"success": False, "error": "Invalid field"}, status=400
-                )
-
-            # Extract stage name: 'sales_status' -> 'sales'
-            if status_field.endswith("_status"):
-                stage_name = status_field.replace("_status", "")
-                update_stage_status(stage, stage_name, new_value)
-
-                return JsonResponse(
-                    {
-                        "success": True,
-                        "stage_id": stage.id,
-                        "status_field": status_field,
-                        "new_value": new_value,
-                    }
-                )
-            else:
-                return JsonResponse(
-                    {"success": False, "error": "Invalid field name"}, status=400
-                )
-
-        except Exception as e:
-            return JsonResponse({"success": False, "error": str(e)}, status=500)
-
-    return JsonResponse(
-        {"success": False, "error": "Invalid request method"}, status=405
-    )
+    stage = get_object_or_404(ProductionStage, pk=pk)
+    data = json.loads(request.body)
+    status_field = data.get('status_field')
+    new_value = data.get('new_value')
+    
+    if not status_field or not hasattr(stage, status_field):
+        return JsonResponse({'success': False, 'error': 'Invalid field'}, status=400)
+    
+    if status_field.endswith('_status'):
+        stage_name = status_field.replace('_status','')
+        update_stage_status(stage, stage_name, new_value)
+        return JsonResponse({
+            'success': True,
+            'stage_id': stage.id,
+            'status_field': status_field,
+            'new_value': new_value
+        })
+    
+    return JsonResponse({'success': False, 'error': 'Invalid field name'}, status=400)
