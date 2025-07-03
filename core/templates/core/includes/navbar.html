@@ -4,20 +4,13 @@
         <!-- Brand/Logo -->
         <a class="navbar-brand d-flex align-items-center" href="#">
             <i class="bi bi-building-gear me-2"></i>
-            <span class="fw-bold">Factory System</span>
+                {% block nav_title %}
+                {% block title %}{% endblock %}
+                {% endblock %}
         </a>
 
         <!-- Navbar content -->
         <div class="d-flex align-items-center ms-auto">
-            <!-- Dark Mode Toggle -->
-            <div class="nav-item me-3">
-                <div class="form-check form-switch" data-bs-toggle="tooltip" title="Toggle Dark Mode">
-                    <input class="form-check-input" type="checkbox" id="darkModeToggle">
-                    <label class="form-check-label" for="darkModeToggle">
-                        <i class="bi bi-moon"></i>
-                    </label>
-                </div>
-            </div>
             
             <!-- User dropdown -->
             <div class="dropdown">

@@ -1,12 +1,8 @@
 {% extends "core/base.html" %}
-{% load static %}
 {% load widget_tweaks dict_extras %}
-
+{% block title %}Simplified Production List{% endblock %}
+{% block nav_title %}Simplified Production List{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h2>Production List</h2>
-</div>
-
 <!-- Filters -->
 <button class="btn btn-sm btn-outline-dark mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#productionFilters">
   🔍 Show Filters
@@ -24,13 +20,10 @@
   </form>
 </div>
 
-<p class="text-muted small ms-2">
-  Showing {{ stages|length }} result{{ stages|length|pluralize }}.
-</p>
 
 <!-- 📋 Production Table -->
 <div class="container-fluid">
-  <table id="OrderDetailList" class="table table-striped table-hover table-bordered text-center datatable">
+  <table id="ProductionList" class="table table-striped table-hover table-bordered text-center datatable">
     <thead class="table-dark">
       <tr>
         <th>Order Ref</th>
