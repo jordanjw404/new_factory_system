@@ -8,12 +8,12 @@
   <table id="ProductionDetailList" class="table table-striped table-hover table-bordered text-center datatable">
     <thead class="table-dark">
       <tr>
-        <th>Order Ref</th>
         <th>Customer</th>
+        <th>Ref Name</th>
+        <th>Ref No.</th>
         {% for field in status_fields %}
-          <th>{{ field|capfirst }}<br>Status</th>
-          <th>{{ field|capfirst }}<br>Target</th>
-          <th>{{ field|capfirst }}<br>Completed</th>
+          <th>{{ field|slice:":4"|capfirst }}<br>Status</th>
+          <th>{{ field|slice:":4"|capfirst }}<br>Target</th>
         {% endfor %}
         <th>Actions</th>
       </tr>
@@ -21,8 +21,9 @@
     <tbody>
       {% for stage in stages %}
       <tr>
-        <td>{{ stage.order.reference }}</td>
         <td>{{ stage.order.customer.name }}</td>
+        <td>{{ stage.order.name }}</td>
+        <td>{{ stage.order.reference }}</td>
 
         {% for field in status_fields %}
         <td>
@@ -45,8 +46,7 @@
             </ul>
           </div>
         </td>
-        <td>{{ stage|get_target_date:field|date:"Y-m-d" }}</td>
-        <td>{{ stage|get_completed_date:field|date:"Y-m-d" }}</td>
+        <td>{{ stage|get_target_date:field|date:"dS - M" }}</td>
         {% endfor %}
 
         <td>

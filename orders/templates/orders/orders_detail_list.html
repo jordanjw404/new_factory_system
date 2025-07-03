@@ -56,7 +56,7 @@
           <th>ID</th>
           <th>Reference</th>
           <th>Customer</th>
-          <th>Ref Number</th>
+          <th>Ref N0.</th>
           <th>Type</th>
           <th>Status</th>
           <th>Priority</th>
@@ -66,7 +66,7 @@
           <th>Robes</th>
           <th>Cabs</th>
           <th>Panels</th>
-          <th>Total Cabs</th>
+          <th>Total</th>
           <th>Owner</th>
           <th>Created</th>
           <th>Updated</th>
@@ -124,15 +124,15 @@
               {% endif %}
             {% endwith %}
           </td>
-          <td>{{ order.delivery_date|date:"d M Y" }}</td>
+          <td>{{ order.delivery_date|date:"d M" }}</td>
           <td>{% if order.is_collection %}✅{% else %}❌{% endif %}</td>
           <td>{{ order.robes }}</td>
           <td>{{ order.cabs }}</td>
           <td>{{ order.panels }}</td>
           <td>{{ order.robes|add:order.cabs }}</td>
           <td>{{ order.owner }}</td>
-          <td>{{ order.created_at|date:"d M Y, H:i" }}</td>
-          <td>{{ order.updated_at|date:"d M Y, H:i" }}</td>
+          <td>{{ order.created_at|date:"d M " }}</td>
+          <td>{{ order.updated_at|date:"d M " }}</td>
         </tr>
         {% endfor %}
       </tbody>

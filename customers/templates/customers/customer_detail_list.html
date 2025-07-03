@@ -1,12 +1,12 @@
 {% extends "core/base.html" %}
 {% load widget_tweaks %}
-
+{% block title %}Customer Overview{% endblock %}
+{% block nav_title %}Customer Overview{% endblock %}
 {% block content %}
-<div class="container mt-4">
+<div class="container-fluid">
 
   <!-- Header + Action Buttons -->
   <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-    <h2 class="mb-0">Customer Detailed List</h2>
     <div class="btn-group">
       <a href="{% url 'customers:customer_list' %}" class="btn btn-outline-secondary btn-sm">
         <i class="bi bi-arrow-left"></i> Back to Customer List

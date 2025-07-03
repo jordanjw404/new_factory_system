@@ -26,8 +26,9 @@
   <table id="ProductionList" class="table table-striped table-hover table-bordered text-center datatable">
     <thead class="table-dark">
       <tr>
-        <th>Order Ref</th>
         <th>Customer</th>
+        <th>Ref Name</th>
+        <th>Ref No.</th>
         <th>Sales</th>
         <th>Programming</th>
         <th>Nest</th>
@@ -43,15 +44,15 @@
     <tbody>
       {% for stage in stages %}
       <tr>
-        <td>{{ stage.order.reference }}</td>
         <td>{{ stage.order.customer.name }}</td>
+        <td>{{ stage.order.name }}</td>
+        <td>{{ stage.order.reference }}</td>
 
 {% for field in status_fields %}
   <td>
     <div class="dropdown" data-stage-id="{{ stage.id }}">
       <a class="badge bg-{{ badge_colors|get_item:stage.id|get_item:field|default:'secondary' }} dropdown-toggle text-decoration-none"
-         href="#" role="button" id="dropdownMenu{{ field }}{{ stage.id }}"
-" data-bs-toggle="dropdown" aria-expanded="false">
+         href="#" role="button" id="dropdownMenu{{ field }}{{ stage.id }}"" data-bs-toggle="dropdown" aria-expanded="false">
         {% with full_field=field|add:"_status" %}
           {{ stage|get_status_display:full_field|default:"-" }}
         {% endwith %}
