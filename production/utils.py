@@ -111,10 +111,8 @@ def compute_stage_targets(
 
 
 def create_production_stage(order: Any, offsets: Optional[Dict[str, int]] = None) -> ProductionStage:
-    """
-    Create a new production stage with calculated dates.
-    """
-    obj = ProductionStage.objects.create(order=order)
+    
+    obj, _created = ProductionStage.objects.get_or_create(order=order)
     
     # Extract delivery date
     delivery = order.delivery_date

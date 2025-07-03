@@ -30,7 +30,7 @@
 
 <!-- 📋 Production Table -->
 <div class="container-fluid">
-  <table id="productionTable" class="table table-hover table-striped table-bordered table-sm align-middle text-center w-100">
+  <table id="OrderDetailList" class="table table-striped table-hover table-bordered text-center datatable">
     <thead class="table-dark">
       <tr>
         <th>Order Ref</th>
@@ -122,13 +122,4 @@
 {% endfor %}
 {% endblock %}
 
-{% block scripts %}
-<!-- Load jQuery first -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<!-- Then load DataTables -->
-<script src="https://cdn.datatables.net/v/dt/dt-1.11.5/datatables.min.js"></script>
-
-<!-- Then your custom script -->
-<script src="{% static 'production/js/production.js' %}"></script>
-{% endblock %}
+{% block scripts %}{% endblock %}

@@ -11,5 +11,5 @@ urlpatterns = [
     path('<int:pk>/delivery-update/', views.delivery_date_update, name='delivery_date_update'),
     path('<int:pk>/delete/', views.order_delete, name='order_delete'),
     path('detail-list/', views.order_detail_list, name='order_detail_list'),
-    path('export/excel/', views.export_orders_excel, name='export_orders_excel'),
+    path('export/excel/', views.export_orders_excel, name='order_export'),
 ]
