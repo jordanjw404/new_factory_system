@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_plotly_dash.apps.DjangoPlotlyDashConfig",
+    "dpd_static_support",
     "crispy_forms",
     "crispy_bootstrap5",
     "core",
@@ -52,6 +54,7 @@ INSTALLED_APPS = [
     "inventory",
     "factory_kpis",
     "employees",
+    "whitenoise.runserver_nostatic",
 ]
 
 MIDDLEWARE = [
@@ -62,6 +65,10 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    "django_plotly_dash.middleware.ExternalRedirectionMiddleware",
+    'django_plotly_dash.middleware.BaseMiddleware',
 ]
 
 ROOT_URLCONF = "factory_system.urls"
@@ -97,7 +104,9 @@ DATABASES = {
         "PORT": "5432",
     }
 }
-
+PLOTLY_COMPONENTS = [
+    'dpd_static_support'
+]
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -132,9 +141,10 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
-
+STATICFILES_LOCATION = "static"
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
@@ -166,3 +176,5 @@ if "test" in sys.argv:
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": ":memory:",
     }
+
+X_FRAME_OPTIONS = 'SAMEORIGIN'

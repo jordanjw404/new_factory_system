@@ -25,11 +25,11 @@ urlpatterns = [
     path("", include("core.urls")),
     path("customers/", include("customers.urls")),
     path("orders/", include("orders.urls")),
-    path(
-        "production/",
-        include(("production.urls", "production"), namespace="production"),
-    ),
+    path("production/",include(("production.urls", "production"), namespace="production"),),
     path("inventory/", include("inventory.urls", namespace="inventory")),
+    path('django_plotly_dash/', include('django_plotly_dash.urls')),
+    path('dashboard/', include('dashboard.urls')),
+
 ]
 
 if settings.DEBUG:

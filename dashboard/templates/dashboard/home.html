@@ -1,0 +1,12 @@
+{% extends "core/base.html" %}
+{% load plotly_dash %}
+
+{% block title %}Dashboard{% endblock %}
+{% block nav_title %}📊 Dashboard{% endblock %}
+
+{% block content %}
+  <div class="container-fluid">
+    <!-- This will render the Dash app named "OrdersByStatus" -->
+    {% plotly_app name="OrdersByStatus" %}
+  </div>
+{% endblock %}
