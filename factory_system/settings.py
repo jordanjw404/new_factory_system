@@ -51,10 +51,10 @@ INSTALLED_APPS = [
     "django_filters",
     "widget_tweaks",
     "django_tables2",
-    "inventory",
     "factory_kpis",
     "employees",
     "whitenoise.runserver_nostatic",
+    "inventory"
 ]
 
 MIDDLEWARE = [

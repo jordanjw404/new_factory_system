@@ -1,31 +1,21 @@
 from django.contrib import admin
+from .models import Product, Balance, StockTransaction
 
-from .models import Board, Cabinet, EdgeBanding, Hardware, Inventory, Supplier
+@admin.register(Product)
+class ProductAdmin(admin.ModelAdmin):
+    list_display = ("sku", "name", "created_at")
+    search_fields = ("sku", "name")
 
+@admin.register(Balance)
+class BalanceAdmin(admin.ModelAdmin):
+    list_display = ("product", "location_code", "qty_on_hand", "updated_at")
+    list_filter = ("location_code",)
+    search_fields = ("product__sku", "product__name", "location_code")
+    autocomplete_fields = ("product",)
 
-@admin.register(Inventory)
-class InventoryAdmin(admin.ModelAdmin):
-    list_display = (
-        "barcode",
-        "item",
-        "quantity_on_hand",
-        "quantity_reserved",
-        "quantity_available",
-        "barcode_image_tag",
-    )
-    readonly_fields = ("barcode_image_tag",)
-
-    def barcode_image_tag(self, obj):
-        if obj.barcode_image:
-            return f'<img src="{obj.barcode_image.url}" width="150" />'
-        return "-"
-
-    barcode_image_tag.short_description = "Barcode Image"
-    barcode_image_tag.allow_tags = True
-
-
-admin.site.register(Supplier)
-admin.site.register(Cabinet)
-admin.site.register(Hardware)
-admin.site.register(Board)
-admin.site.register(EdgeBanding)
+@admin.register(StockTransaction)
+class StockTransactionAdmin(admin.ModelAdmin):
+    list_display = ("created_at", "txn_type", "product", "from_location", "to_location", "qty", "note")
+    list_filter = ("txn_type",)
+    date_hierarchy = "created_at"
+    search_fields = ("product__sku", "product__name", "from_location", "to_location", "note")
