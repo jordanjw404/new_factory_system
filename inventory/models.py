@@ -7,6 +7,8 @@ class Product(models.Model):
     sku = models.CharField(max_length=64, unique=True)
     name = models.CharField(max_length=200)
     created_at = models.DateTimeField(auto_now_add=True)
+    barcode = models.CharField(max_length=20, unique=True)
+
 
     class Meta:
         db_table = "inventory_product"
@@ -49,9 +51,48 @@ class StockTransaction(models.Model):
     note = models.CharField(max_length=120, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    
     class Meta:
         db_table = "inventory_stocktxn"
         ordering = ["-created_at"]
 
     def __str__(self):
         return f"{self.txn_type} {self.qty} {self.product.sku}"
+    
+
+class Location(models.Model):
+    aisle = models.CharField(max_length=32)
+    bay = models.CharField(max_length=32)
+    level = models.CharField(max_length=32)
+    shelf_position = models.CharField(max_length=32)
+    description = models.CharField(max_length=200, blank=True, null=True)
+
+class Supplier(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=200)
+    contact_name = models.CharField(max_length=200, blank=True, null=True)
+    contact_phone = models.CharField(max_length=20, blank=True, null=True)
+    contact_email = models.EmailField(blank=True, null=True)
+    address_line_1 = models.CharField(max_length=200)
+    address_line_2 = models.CharField(max_length=200, blank=True, null=True)
+    city = models.CharField(max_length=100)
+    county = models.CharField(max_length=100)
+    postcode = models.CharField(max_length=20)
+    website = models.URLField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+class Manufacturer(models.Models):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=200)
+    contact_name = models.CharField(max_length=200, blank=True, null=True)
+    contact_phone = models.CharField(max_length=20, blank=True, null=True)
+    contact_email = models.EmailField(blank=True, null=True)
+    address_line_1 = models.CharField(max_length=200)
+    address_line_2 = models.CharField(max_length=200, blank=True, null=True)
+    city = models.CharField(max_length=100)
+    county = models.CharField(max_length=100)
+    postcode = models.CharField(max_length=20)
+    website = models.URLField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)

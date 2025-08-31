@@ -51,7 +51,6 @@ INSTALLED_APPS = [
     "django_filters",
     "widget_tweaks",
     "django_tables2",
-    "factory_kpis",
     "employees",
     "whitenoise.runserver_nostatic",
     "inventory"

@@ -38,7 +38,7 @@ DEFAULT_OFFSETS: Dict[str, int] = {
 
 def adjust_for_non_business(dt: date) -> date:
     """
-    Continuously move dt back one day at a time until it's a valid business day:
+    Continuously move date back one day at a time until it's a valid business day:
       - Skip Saturdays & Sundays
       - Skip UK bank holidays
     """
