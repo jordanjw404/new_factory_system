@@ -9,5 +9,5 @@ def handle_order_production(sender, instance, created, **kwargs):
     Creates production stage when order is marked for production.
     Only creates if it doesn't already exist.
     """
-    if instance.send_to_production and not hasattr(instance, 'productionstage'):
+    if instance.send_to_production and not hasattr(instance, 'production_stage'):
         create_production_stage(instance)

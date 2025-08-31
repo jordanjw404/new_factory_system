@@ -7,7 +7,8 @@ class Product(models.Model):
     sku = models.CharField(max_length=64, unique=True)
     name = models.CharField(max_length=200)
     created_at = models.DateTimeField(auto_now_add=True)
-    barcode = models.CharField(max_length=20, unique=True)
+    barcode = models.CharField(max_length=32, unique=True, null=True, blank=True)
+
 
 
     class Meta:
@@ -82,7 +83,7 @@ class Supplier(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-class Manufacturer(models.Models):
+class Manufacturer(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=200)
     contact_name = models.CharField(max_length=200, blank=True, null=True)
