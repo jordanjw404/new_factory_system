@@ -49,15 +49,22 @@
         <td>{{ stage.order.reference }}</td>
 
 {% for field in status_fields %}
-  <td>
-    <div class="dropdown" data-stage-id="{{ stage.id }}">
+    <td>
+    <div class="dropdown"
+        data-stage-id="{{ stage.id }}"
+        data-url="{% url 'production:production_update_status' stage.id %}">
       <a class="badge bg-{{ badge_colors|get_item:stage.id|get_item:field|default:'secondary' }} dropdown-toggle text-decoration-none"
-         href="#" role="button" id="dropdownMenu{{ field }}{{ stage.id }}"" data-bs-toggle="dropdown" aria-expanded="false">
+        href="#"
+        role="button"
+        id="dropdownMenu{{ field }}{{ stage.id }}"
+        data-bs-toggle="dropdown"
+        aria-expanded="false">
         {% with full_field=field|add:"_status" %}
           {{ stage|get_status_display:full_field|default:"-" }}
         {% endwith %}
       </a>
-      <ul class="dropdown-menu" aria-labelledby="dropdownMenu{{ field|capfirst }}{{ stage.id }}">
+      <ul class="dropdown-menu" aria-labelledby="dropdownMenu{{ field }}{{ stage.id }}">
+        <!-- keep your existing items -->
         <li><a class="dropdown-item" href="#" data-action="update-status" data-stage-id="{{ stage.id }}" data-field="{{ field }}_status" data-value="NOT_STARTED">Not Started</a></li>
         <li><a class="dropdown-item" href="#" data-action="update-status" data-stage-id="{{ stage.id }}" data-field="{{ field }}_status" data-value="IN_PROGRESS">In Progress</a></li>
         <li><a class="dropdown-item" href="#" data-action="update-status" data-stage-id="{{ stage.id }}" data-field="{{ field }}_status" data-value="STUCK">Stuck</a></li>
@@ -66,7 +73,8 @@
         <li><a class="dropdown-item" href="#" data-action="update-status" data-stage-id="{{ stage.id }}" data-field="{{ field }}_status" data-value="READY">Ready</a></li>
       </ul>
     </div>
-  </td>
+    </td>
+
 {% endfor %}
 
 
@@ -116,4 +124,81 @@
 {% endfor %}
 {% endblock %}
 
-{% block scripts %}{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  // Mirror of get_badge_color() server map
+  const BADGE_COLOR = {
+    NOT_STARTED: 'secondary',
+    IN_PROGRESS: 'warning',
+    STUCK: 'danger',
+    ON_HOLD: 'dark',
+    COMPLETED: 'success',
+    READY: 'info',
+    CONFIRMATION: 'primary',
+    NO_PAPERWORK: 'danger'
+  };
+
+  function getCookie(name) {
+    const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return m ? decodeURIComponent(m.pop()) : '';
+  }
+
+  function setBadge(el, value, label) {
+    if (label) el.textContent = label;
+    el.className = el.className.replace(/\bbg-\w+\b/g, '').trim();
+    el.classList.add('bg-' + (BADGE_COLOR[value] || 'secondary'));
+  }
+
+  document.addEventListener('click', async (e) => {
+    const link = e.target.closest('a[data-action="update-status"]');
+    if (!link) return;
+    e.preventDefault();
+
+    const dd     = link.closest('.dropdown');
+    const url    = dd?.dataset.url;                // ✅ use server-built URL
+    const field  = link.dataset.field;             // e.g. "build_status"
+    const value  = link.dataset.value;             // e.g. "IN_PROGRESS"
+    const label  = link.textContent.trim();        // "In Progress"
+    const toggle = dd?.querySelector('[data-bs-toggle="dropdown"].badge');
+
+    if (!url || !field || !value) return;
+
+    // Optional: saving hint
+    if (toggle) toggle.classList.add('opacity-75');
+
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken') // fine even if view is csrf_exempt
+        },
+        body: JSON.stringify({ status_field: field, new_value: value })
+      });
+
+      if (!res.ok) {
+        console.error('Update failed:', await res.text());
+        alert('Update failed — check server logs.');
+        return;
+      }
+
+      // Success: update badge UI
+      if (toggle) setBadge(toggle, value, label);
+
+      // Close dropdown (Bootstrap 5)
+      try {
+        const inst = bootstrap.Dropdown.getOrCreateInstance(toggle);
+        inst.hide();
+      } catch (_) {}
+    } catch (err) {
+      console.error(err);
+      alert('Network error while saving.');
+    } finally {
+      if (toggle) toggle.classList.remove('opacity-75');
+    }
+  });
+})();
+</script>
+{% endblock %}
+

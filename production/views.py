@@ -324,21 +324,40 @@ def update_target_date(request, stage_id):
 @login_required
 def production_update_status(request, pk):
     stage = get_object_or_404(ProductionStage, pk=pk)
-    data = json.loads(request.body)
-    status_field = data.get('status_field')
-    new_value = data.get('new_value')
-    
-    if not status_field or not hasattr(stage, status_field):
-        return JsonResponse({'success': False, 'error': 'Invalid field'}, status=400)
-    
-    if status_field.endswith('_status'):
-        stage_name = status_field.replace('_status','')
-        update_stage_status(stage, stage_name, new_value)
-        return JsonResponse({
-            'success': True,
-            'stage_id': stage.id,
-            'status_field': status_field,
-            'new_value': new_value
-        })
-    
-    return JsonResponse({'success': False, 'error': 'Invalid field name'}, status=400)
+
+    try:
+        data = json.loads(request.body or "{}")
+    except json.JSONDecodeError:
+        return JsonResponse({"success": False, "error": "Invalid JSON"}, status=400)
+
+    status_field = data.get("status_field")
+    new_value = data.get("new_value")
+
+    # Basic validation
+    if not status_field or not status_field.endswith("_status") or not hasattr(stage, status_field):
+        return JsonResponse({"success": False, "error": "Invalid field"}, status=400)
+   # Validate against field choices (Sales vs other stages)
+    field_obj = ProductionStage._meta.get_field(status_field)
+    allowed = [val for val, _ in field_obj.choices]
+    if new_value not in allowed:
+        return JsonResponse({"success": False, "error": "Invalid status for this field"}, status=400)
+
+    # Apply update (also manages completed_date inside util)
+    stage_name = status_field[:-7]  # strip '_status'
+    update_stage_status(stage, stage_name, new_value)
+
+    # Prepare response bits
+    display_text = getattr(stage, f"get_{stage_name}_status_display")()
+    comp_date = getattr(stage, f"{stage_name}_completed_date")
+    allowed_choices = [{"value": v, "label": lbl} for v, lbl in field_obj.choices]
+
+    return JsonResponse({
+        "success": True,
+        "stage_id": stage.id,
+        "status_field": status_field,
+        "value": new_value,
+        "display": display_text,
+        "badge_color": get_badge_color(new_value),
+        "completed_date": comp_date.isoformat() if comp_date else None,
+        "allowed_choices": allowed_choices,
+    })
