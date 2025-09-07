@@ -15,7 +15,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// ----- Status dropdown AJAX (no inline JS; CSP-safe) -----
 (function () {
   // Keep in sync with server get_badge_color()
   const BADGE_COLOR = {

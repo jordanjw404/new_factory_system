@@ -1,0 +1,21 @@
+from enum import StrEnum
+
+class OfficeStatus(StrEnum):
+    PRE_BOOK = "PRE_BOOK"
+    NO_PAPERWORK = "NO_PAPERWORK"
+    NON_PRODUCTION = "NON_PRODUCTION"
+    ON_HOLD = "ON_HOLD"
+    CONFIRMATION = "CONFIRMATION"
+    WORKING = "WORKING"
+    CONFIRMED = "CONFIRMED"
+    READY_FOR_PROGRAMMING = "READY_FOR_PROGRAMMING"
+
+class DispatchStatus(StrEnum):
+    NOT_SCHEDULED = "NOT_SCHEDULED"
+    SCHEDULED     = "SCHEDULED"
+    STAGED        = "STAGED"
+    LOADED        = "LOADED"
+    ON_ROUTE      = "ON_ROUTE"
+    DELIVERED     = "DELIVERED"
+    COLLECTED     = "COLLECTED"
+
